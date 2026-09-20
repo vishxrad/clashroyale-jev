@@ -1,3 +1,10 @@
+"""Connect Cerebras battlefield perception and Jev action selection.
+
+Build prompts and structured requests, validate responses, and apply the optional
+troop allowlist. A shared HTTP gateway manages credentials, request budgets,
+provider pacing, and usage records for both model adapters.
+"""
+
 from __future__ import annotations
 
 import asyncio

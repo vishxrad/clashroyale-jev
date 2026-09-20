@@ -1,3 +1,10 @@
+"""Validate Jev's selected action, send device taps, and confirm deployment.
+
+Recheck observation age, the current hand, elixir, and placement rules before
+input. Track card replacement and elixir spending across fresh frames, and halt
+when deployment cannot be confirmed or input is interrupted.
+"""
+
 from __future__ import annotations
 
 import asyncio

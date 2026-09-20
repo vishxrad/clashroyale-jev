@@ -1,3 +1,10 @@
+"""Capture timestamped Android frames and send taps through ADB.
+
+Discover and select a device, decode raw screenshots with a PNG fallback, and
+provide a capture loop that retains only the latest frame for inference.
+Capture timestamps include device transfer time when measuring state age.
+"""
+
 from __future__ import annotations
 
 import asyncio

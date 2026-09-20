@@ -1,3 +1,10 @@
+"""Define the validated data exchanged across perception, decisions, and input.
+
+Represent normalized geometry, battlefield observations, the HUD, tracked state,
+candidate actions, and Jev decisions with Pydantic models. Shared constraints
+reject invalid coordinates, duplicate identifiers, and unexpected fields.
+"""
+
 from __future__ import annotations
 
 from typing import Annotated, Literal

@@ -1,3 +1,10 @@
+"""Coordinate screenshot perception, Jev decisions, control, and recording.
+
+Combine local HUD recognition with battlefield perception, maintain tracked state,
+and pass candidate actions to Jev. The live loop consumes recent frames, monitors
+deployment confirmation, and stops on configured limits or failure conditions.
+"""
+
 from __future__ import annotations
 
 import asyncio

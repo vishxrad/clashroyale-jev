@@ -1,3 +1,10 @@
+"""Define and persist the configuration for one device and eight-card deck.
+
+Validate screen regions, placement rules, card templates, recognition thresholds,
+and model runtime settings. Load and save these settings as JSON while checking
+layout geometry, card identifiers, and the optional detection allowlist.
+"""
+
 from __future__ import annotations
 
 import json

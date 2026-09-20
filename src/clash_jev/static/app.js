@@ -1,3 +1,9 @@
+/**
+ * Drive the browser's live gameplay, recorded playback, and calibration views.
+ * Fetch frames and state from the local server, align overlays with the displayed
+ * timeline, show Jev's decisions, and send Start, Stop, and calibration requests.
+ * The optional video buffer changes presentation timing only.
+ */
 import {pretty, title, clock, eventTime, captureTime, indexAt, observationIndexAt, placement, deriveLog, visibleLog, unitLabelVisible} from './replay-state.js';
 const $ = id => document.getElementById(id);
 const canvas = $('arena'), ctx = canvas.getContext('2d'), video = $('game-video');

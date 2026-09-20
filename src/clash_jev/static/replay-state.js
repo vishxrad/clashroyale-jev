@@ -1,4 +1,8 @@
-// Pure timeline helpers shared by the viewer and temporal regression checks.
+/**
+ * Share pure formatting and timeline helpers between live and recorded views.
+ * Map capture and action timestamps to the displayed frame, filter unit labels,
+ * and derive visible events without changing the recorded state or bot decisions.
+ */
 export const pretty = value => String(value ?? 'unknown').replaceAll('_', ' ');
 export const title = value => pretty(value).replace(/\b\w/g, c => c.toUpperCase());
 // Presentation preference: retain raw detections in recorded events and bot state.

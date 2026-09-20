@@ -1,3 +1,10 @@
+"""Read the hand, elixir bar, and optional timer from calibrated screen crops.
+
+Match card artwork with OpenCV, estimate elixir from its colored fill, and use
+Tesseract for timer text when available. Recognition thresholds determine which
+cards are known and whether the HUD is ready for gameplay processing.
+"""
+
 from __future__ import annotations
 
 import re

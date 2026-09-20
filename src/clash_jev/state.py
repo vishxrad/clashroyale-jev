@@ -1,3 +1,10 @@
+"""Turn ordered battlefield observations and HUD readings into tracked state.
+
+Match nearby units by type and team to estimate identities and velocities, then
+attach recent action history. Only current detections remain actionable; an
+optional occupancy grid provides a spatial view of the observed units.
+"""
+
 from __future__ import annotations
 
 import math

@@ -1,3 +1,10 @@
+"""Expose the clash-jev command for setup, inspection, and gameplay.
+
+Parse configuration and device options, then dispatch capture, calibration,
+model probes, recorded views, or live sessions. API requests and game input
+require their respective command-line flags.
+"""
+
 from __future__ import annotations
 
 import argparse

@@ -1,3 +1,10 @@
+"""Serve the local browser interface and its calibration and gameplay endpoints.
+
+Provide static assets, saved run data, live frames, and bot controls. Calibration
+routes inspect screenshots, save card templates, and persist layout settings;
+the same server also supports viewing recorded sessions.
+"""
+
 from __future__ import annotations
 
 import hashlib

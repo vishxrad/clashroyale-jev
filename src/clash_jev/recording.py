@@ -1,3 +1,10 @@
+"""Save screenshots, decisions, controller events, and run summaries.
+
+Each run gets its own directory with configuration metadata, timestamped JSONL
+events, and JPEG frames. Atomically replace JSON snapshots and summarize action
+counts, request usage, and latency for inspection by the browser and CLI.
+"""
+
 from __future__ import annotations
 
 import json

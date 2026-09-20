@@ -1,3 +1,10 @@
+"""Build the card and placement options that Jev can choose from.
+
+Use the recognized hand, elixir, and calibrated placement rules to generate
+affordable actions. Spells also receive observed enemy cluster and tower targets;
+WAIT remains available in every state.
+"""
+
 from __future__ import annotations
 
 import math

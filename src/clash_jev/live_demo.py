@@ -1,4 +1,9 @@
-"""Live device video and explicit browser controls for a single bot session."""
+"""Stream live device video and manage one browser-controlled bot session.
+
+Decode Android video into timestamped JPEG frames with an optional display
+buffer. Run model processing independently of the video feed, expose recorded
+state to the browser, and coordinate Start, Stop, and resource cleanup.
+"""
 
 from __future__ import annotations
 

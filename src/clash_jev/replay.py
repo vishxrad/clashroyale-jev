@@ -1,3 +1,10 @@
+"""Run supplied labeled screenshots through the pipeline with scripted choices.
+
+Read fixture JSON and images, substitute annotated perception and action choices,
+and write a normal run recording. This utility makes no model requests and sends
+no device input; its results are explicitly marked as fixture output.
+"""
+
 from __future__ import annotations
 
 import asyncio
