@@ -134,7 +134,7 @@ See [gameplay validation](docs/live-gameplay.md) and [model experiment notes](do
 | `src/clash_jev/live_demo.py` | Continuous device stream and browser Start/Stop controls |
 | `src/clash_jev/webui.py`, `static/` | Calibration, replay and live interface |
 
-Local credentials, calibration, card templates, screenshots, runs, diagnostics, and generated media are excluded from Git. See [CONTRIBUTING.md](CONTRIBUTING.md) for contribution notes.
+Local credentials, calibration, card templates, screenshots, runs, diagnostics, and generated media are excluded from Git.
 
 ## Documentation
 
