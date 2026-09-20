@@ -16,7 +16,7 @@ dependencies = [
 clash-jev = "clash_jev.cli:main"
 
 [dependency-groups]
-dev = ["pytest>=8,<10", "pytest-asyncio>=1,<2", "ruff>=0.12,<1"]
+dev = ["ruff>=0.12,<1"]
 
 [build-system]
 requires = ["hatchling"]
@@ -27,14 +27,9 @@ packages = ["src/clash_jev"]
 
 [tool.hatch.build.targets.sdist]
 include = [
-  "/src", "/tests", "/scripts", "/docs", "/fixtures/synthetic",
-  "/config/example.json", "/config/synthetic.json",
-  "/README.md", "/pyproject.toml", "/uv.lock", "/.env.example", "/.gitignore",
+  "/src", "/scripts", "/docs", "/config/example.json",
+  "/README.md", "/CONTRIBUTING.md", "/pyproject.toml", "/uv.lock", "/.env.example", "/.gitignore",
 ]
-
-[tool.pytest.ini_options]
-asyncio_mode = "auto"
-testpaths = ["tests"]
 
 [tool.ruff]
 line-length = 100

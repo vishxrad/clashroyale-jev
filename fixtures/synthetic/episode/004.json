@@ -1,9 +1,0 @@
-{
-  "image": "004.png",
-  "choice": "WAIT",
-  "battlefield": {
-    "battle_active": false,
-    "units": [],
-    "towers": []
-  }
-}

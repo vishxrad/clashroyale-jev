@@ -2,9 +2,20 @@
 
 A screenshot-driven Clash Royale bot: **Jev chooses the card and placement**, Qwen 3.8 27B on Cerebras reads the battlefield, and OpenCV recognizes the hand and elixir. The game runs on an Android device or emulator, controlled through ADB.
 
-The browser demo puts gameplay beside the current decision, hand, card/placement scores, and action JSON. This repository includes the application, synthetic fixtures, calibration tools, and tests. Bring your own model credentials, device calibration, and card templates for live play.
+The live browser demo puts gameplay beside Jev's current decision, hand, card/placement scores, and action JSON. Run it on your computer with your own emulator or Android device, API keys, and calibrated card templates. The browser connects to your local game; this repository does not host a public playable session.
 
-## Try it without API keys or a device
+## Run the live demo
+
+### 1. Install
+
+You need:
+
+- Python 3.11+; the commands below use Python 3.12.
+- An Android device or emulator running Clash Royale, with ADB enabled and reachable. Live capture and input were verified on macOS with MuMuPlayer Pro.
+- `adb` from [Android Platform Tools](https://developer.android.com/tools/releases/platform-tools), or the supported bundled MuMu/BlueStacks executable. Supply `--adb` if automatic discovery cannot find it.
+- `ffmpeg` on PATH for the browser's continuous gameplay feed.
+- Cerebras access to the configured image-capable Qwen model, and a Jev API key. Model availability depends on your provider account.
+- Optional: `tesseract` for the timer crop. Without it, the timer remains unknown.
 
 Install [uv](https://docs.astral.sh/uv/getting-started/installation/) and Git, then run:
 
@@ -12,44 +23,7 @@ Install [uv](https://docs.astral.sh/uv/getting-started/installation/) and Git, t
 git clone https://github.com/vishxrad/clashroyale-jev.git
 cd clashroyale-jev
 uv sync --locked --python 3.12
-uv run clash-jev --config config/synthetic.json replay fixtures/synthetic/episode --output runs/offline-demo
-uv run clash-jev view runs/offline-demo --port 8765
 ```
-
-Open **http://127.0.0.1:8765/**. This uses synthetic images and scripted decisions, makes no model requests, and sends no game input. Use a new output directory when repeating a replay. Open the server URL, not `index.html` directly.
-
-## How it works
-
-```text
-Screenshot + capture timestamp
-    ├── card crops and elixir bar → local OpenCV recognition
-    └── battlefield crop → Qwen → units and towers
-                     ↓
-       tracked state + hand + recent actions
-                     ↓
-          affordable card/placement candidates
-                     ↓
-         Jev chooses a card, then a placement
-                     ↓
-       check freshness, hand, cost and position
-                     ↓
-         ADB card tap → arena tap → confirmation
-```
-
-The demo configuration uses two-stage decisions. The generic example also supports a single joint card/placement choice. WAIT is always available. A deployment is confirmed from a replacement card and observed elixir spending. The controller stops on an unresolved deployment rather than blindly repeating input.
-
-The starter deck is **Knight, Archers, Giant, Musketeer, Mini P.E.K.K.A, Minions, Fireball, and Arrows**.
-
-## Run against your game
-
-### 1. Requirements
-
-- Python 3.11+; the setup and CI use Python 3.12.
-- An Android device or emulator running Clash Royale, with ADB already enabled and reachable. Live capture and input were tested on macOS with MuMuPlayer Pro.
-- `adb` from [Android Platform Tools](https://developer.android.com/tools/releases/platform-tools), or the supported bundled MuMu/BlueStacks executable. Supply `--adb` if automatic discovery cannot find it.
-- `ffmpeg` on PATH for the browser's continuous gameplay feed.
-- Cerebras access to the configured image-capable Qwen model, and a Jev API key. Model availability depends on your provider account.
-- Optional: `tesseract` for the timer crop. Without it, the timer remains unknown.
 
 ### 2. Credentials
 
@@ -71,7 +45,7 @@ uv run clash-jev capture --serial YOUR_DEVICE_SERIAL --output captures/battle.pn
 uv run clash-jev --config config/example.json calibrate captures/battle.png --port 8766
 ```
 
-Replace the uppercase placeholders. Capture an actual battlefield with the starter deck visible, then open **http://127.0.0.1:8766/**:
+Replace the uppercase placeholders. Use the starter deck: **Knight, Archers, Giant, Musketeer, Mini P.E.K.K.A, Minions, Fireball, and Arrows**. Capture an actual battlefield with the hand visible, then open **http://127.0.0.1:8766/**:
 
 1. Mark the battlefield, four card-artwork regions, and the full elixir bar.
 2. Review the deployment positions, own-half boundary, and tower exclusion regions.
@@ -86,7 +60,7 @@ uv run clash-jev --config config/local.json inspect captures/next-hand.png
 uv run clash-jev --config config/local.json doctor
 ```
 
-The example geometry and synthetic fixtures are not calibrated for your game. Each installation needs its own screenshots and templates. Recalibrate if framing, orientation, or the game UI changes.
+The example geometry is not calibrated for your game. Each installation needs its own screenshots and templates. Recalibrate if framing, orientation, or the game UI changes.
 
 ### 4. Choose runtime settings
 
@@ -99,7 +73,7 @@ uv run clash-jev --config config/local.json demo --allow-api --execute \
   --serial YOUR_DEVICE_SERIAL --seconds 360 --max-api-calls 300 --port 8767
 ```
 
-Open **http://127.0.0.1:8767/**, click **Start Jev**, and enter a battle manually. **Stop** cancels model processing and game input while the gameplay stream continues. Omit `--execute` to observe and select moves without sending taps.
+Open **http://127.0.0.1:8767/**, click **Start Jev**, and enter a battle manually. Open this server URL rather than `index.html` directly. **Stop** cancels model processing and game input while the gameplay stream continues. Omit `--execute` to observe and select moves without sending taps.
 
 `--allow-api` explicitly enables billed model requests. `--max-api-calls` limits total attempts across both providers, including failed attempts. The run also stops at its time limit, a detected battle end, or a controller/provider failure condition.
 
@@ -112,30 +86,27 @@ uv run clash-jev --config config/local.json run --allow-api --execute \
   --serial YOUR_DEVICE_SERIAL --seconds 360 --max-api-calls 300
 ```
 
-## Inspect a recording or test the models
+Each live run saves its observations and decisions under `runs/`. Use `uv run clash-jev --help` for the capture, calibration, inspection, and recording commands.
 
-Each live run writes a new directory under `runs/`. Pass that directory to the viewer:
+## How it works
 
-```bash
-uv run clash-jev view runs/YOUR_RUN --port 8768
+```text
+Screenshot + capture timestamp
+    ├── card crops and elixir bar → local OpenCV recognition
+    └── battlefield crop → Qwen → units and towers
+                     ↓
+       tracked state + hand + recent actions
+                     ↓
+          affordable card/placement candidates
+                     ↓
+         Jev chooses a card, then a placement
+                     ↓
+       check freshness, hand, cost and position
+                     ↓
+         ADB card tap → arena tap → confirmation
 ```
 
-The replay viewer is read-only. It uses timestamped screenshots, or continuous `gameplay.mp4` when the run has explicit `playback.json` alignment. It never starts the bot or calls a model API. Historical recordings mentioned in the development notes are local artifacts and are not included in this repository.
-
-For a single perception request:
-
-```bash
-uv run clash-jev --config config/local.json perceive captures/battle.png --allow-api
-```
-
-For a saved-screenshot perception → Jev comparison, without device input:
-
-```bash
-uv run python scripts/probe_live.py captures/battle.png \
-  --config config/local.json --provider cerebras --output runs/model-probe --allow-api
-```
-
-Use `uv run clash-jev --help` and `uv run python scripts/probe_live.py --help` for the other commands.
+The demo configuration uses two-stage decisions. The generic example also supports a single joint card/placement choice. WAIT is always available. A deployment is confirmed from a replacement card and observed elixir spending. The controller stops on an unresolved deployment rather than blindly repeating input.
 
 ## Results and limits
 
@@ -149,19 +120,7 @@ See [gameplay validation](docs/live-gameplay.md) and [model experiment notes](do
 - Card and recognition confidence values are not calibrated probabilities of winning.
 - Enemy elixir is unknown. The bot receives no hidden game state.
 
-## Development
-
-```bash
-uv sync --locked --python 3.12
-uv run pytest -q
-uv run ruff check src scripts tests
-uv run ruff format --check src scripts tests
-node --check src/clash_jev/static/app.js
-node --test tests/replay-state.test.mjs
-uv build
-```
-
-Node.js 22 is used in CI for the JavaScript checks. Tests use synthetic assets and mocked model transports; no credentials, emulator, or network inference are required. See [CONTRIBUTING.md](CONTRIBUTING.md).
+## Code map
 
 | Path | Responsibility |
 | --- | --- |
@@ -174,9 +133,8 @@ Node.js 22 is used in CI for the JavaScript checks. Tests use synthetic assets a
 | `src/clash_jev/runner.py` | Perception, HUD, decision and control loop |
 | `src/clash_jev/live_demo.py` | Continuous device stream and browser Start/Stop controls |
 | `src/clash_jev/webui.py`, `static/` | Calibration, replay and live interface |
-| `fixtures/synthetic/` | Generated test artwork and scripted frames |
 
-Local credentials, calibration, card templates, screenshots, runs, diagnostics, and generated media are excluded from Git. Synthetic fixtures are included and can be regenerated with `uv run python scripts/make_demo.py`; this also rewrites the example/synthetic configurations.
+Local credentials, calibration, card templates, screenshots, runs, diagnostics, and generated media are excluded from Git. See [CONTRIBUTING.md](CONTRIBUTING.md) for contribution notes.
 
 ## Documentation
 
