@@ -1,0 +1,256 @@
+{
+  "layout": {
+    "reference_size": [
+      540,
+      960
+    ],
+    "calibrated": true,
+    "arena": {
+      "x": 0.05,
+      "y": 0.08,
+      "w": 0.9,
+      "h": 0.72
+    },
+    "hand": [
+      {
+        "x": 0.12,
+        "y": 0.83,
+        "w": 0.17,
+        "h": 0.1
+      },
+      {
+        "x": 0.32999999999999996,
+        "y": 0.83,
+        "w": 0.17,
+        "h": 0.1
+      },
+      {
+        "x": 0.54,
+        "y": 0.83,
+        "w": 0.17,
+        "h": 0.1
+      },
+      {
+        "x": 0.75,
+        "y": 0.83,
+        "w": 0.17,
+        "h": 0.1
+      }
+    ],
+    "elixir": {
+      "x": 0.12,
+      "y": 0.95,
+      "w": 0.8,
+      "h": 0.02
+    },
+    "timer": null,
+    "troop_min_y": 0.55,
+    "forbidden": [
+      {
+        "x": 0.17,
+        "y": 0.72,
+        "w": 0.16,
+        "h": 0.12
+      },
+      {
+        "x": 0.67,
+        "y": 0.72,
+        "w": 0.16,
+        "h": 0.12
+      },
+      {
+        "x": 0.4,
+        "y": 0.88,
+        "w": 0.2,
+        "h": 0.12
+      }
+    ],
+    "placements": [
+      {
+        "name": "left_defense",
+        "x": 0.25,
+        "y": 0.65,
+        "kinds": [
+          "troop",
+          "building"
+        ]
+      },
+      {
+        "name": "right_defense",
+        "x": 0.75,
+        "y": 0.65,
+        "kinds": [
+          "troop",
+          "building"
+        ]
+      },
+      {
+        "name": "center_defense",
+        "x": 0.5,
+        "y": 0.65,
+        "kinds": [
+          "troop",
+          "building"
+        ]
+      },
+      {
+        "name": "left_bridge",
+        "x": 0.25,
+        "y": 0.56,
+        "kinds": [
+          "troop",
+          "building"
+        ]
+      },
+      {
+        "name": "right_bridge",
+        "x": 0.75,
+        "y": 0.56,
+        "kinds": [
+          "troop",
+          "building"
+        ]
+      },
+      {
+        "name": "center_pull",
+        "x": 0.5,
+        "y": 0.57,
+        "kinds": [
+          "troop",
+          "building"
+        ]
+      },
+      {
+        "name": "left_support",
+        "x": 0.15,
+        "y": 0.87,
+        "kinds": [
+          "troop",
+          "building"
+        ]
+      },
+      {
+        "name": "right_support",
+        "x": 0.85,
+        "y": 0.87,
+        "kinds": [
+          "troop",
+          "building"
+        ]
+      },
+      {
+        "name": "back_left",
+        "x": 0.3,
+        "y": 0.93,
+        "kinds": [
+          "troop",
+          "building"
+        ]
+      },
+      {
+        "name": "back_right",
+        "x": 0.7,
+        "y": 0.93,
+        "kinds": [
+          "troop",
+          "building"
+        ]
+      },
+      {
+        "name": "center_left",
+        "x": 0.4,
+        "y": 0.78,
+        "kinds": [
+          "troop",
+          "building"
+        ]
+      },
+      {
+        "name": "center_right",
+        "x": 0.6,
+        "y": 0.78,
+        "kinds": [
+          "troop",
+          "building"
+        ]
+      }
+    ]
+  },
+  "deck": [
+    {
+      "id": "knight",
+      "cost": 3,
+      "kind": "troop",
+      "description": "Ground melee defender; single target.",
+      "templates": [
+        "fixtures/synthetic/cards/knight.png"
+      ]
+    },
+    {
+      "id": "archers",
+      "cost": 3,
+      "kind": "troop",
+      "description": "Two ranged units that target ground and air.",
+      "templates": [
+        "fixtures/synthetic/cards/archers.png"
+      ]
+    },
+    {
+      "id": "giant",
+      "cost": 5,
+      "kind": "troop",
+      "description": "High-health ground unit that targets buildings.",
+      "templates": [
+        "fixtures/synthetic/cards/giant.png"
+      ]
+    },
+    {
+      "id": "musketeer",
+      "cost": 4,
+      "kind": "troop",
+      "description": "Ranged single-target ground and air support.",
+      "templates": [
+        "fixtures/synthetic/cards/musketeer.png"
+      ]
+    },
+    {
+      "id": "mini_pekka",
+      "cost": 4,
+      "kind": "troop",
+      "description": "High-damage ground melee single-target unit.",
+      "templates": [
+        "fixtures/synthetic/cards/mini_pekka.png"
+      ]
+    },
+    {
+      "id": "minions",
+      "cost": 3,
+      "kind": "troop",
+      "description": "Three flying units that target ground and air; fragile to spells.",
+      "templates": [
+        "fixtures/synthetic/cards/minions.png"
+      ]
+    },
+    {
+      "id": "fireball",
+      "cost": 4,
+      "kind": "spell",
+      "description": "Area damage against ground and air units and towers.",
+      "templates": [
+        "fixtures/synthetic/cards/fireball.png"
+      ]
+    },
+    {
+      "id": "arrows",
+      "cost": 3,
+      "kind": "spell",
+      "description": "Wide area damage against fragile ground and air units.",
+      "templates": [
+        "fixtures/synthetic/cards/arrows.png"
+      ]
+    }
+  ],
+  "runtime": {
+    "action_cooldown_ms": 100
+  }
+}

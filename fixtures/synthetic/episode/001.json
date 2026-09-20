@@ -1,0 +1,33 @@
+{
+  "image": "001.png",
+  "choice": "PLAY_0_knight_left_defense",
+  "battlefield": {
+    "battle_active": true,
+    "units": [
+      {
+        "type": "pekka",
+        "team": "enemy",
+        "x": 0.25,
+        "y": 0.48,
+        "health_band": "high",
+        "confidence": 0.93
+      }
+    ],
+    "towers": [
+      {
+        "id": "ally_left",
+        "x": 0.25,
+        "y": 0.78,
+        "hp": 1840,
+        "destroyed": false
+      },
+      {
+        "id": "enemy_left",
+        "x": 0.25,
+        "y": 0.22,
+        "hp": 2200,
+        "destroyed": false
+      }
+    ]
+  }
+}

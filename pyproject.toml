@@ -1,0 +1,43 @@
+[project]
+name = "clash-jev"
+version = "0.1.0"
+description = "Screenshot perception and bounded Jev decisions for Clash Royale"
+requires-python = ">=3.11"
+dependencies = [
+  "httpx>=0.28,<0.29",
+  "numpy>=2.0,<3",
+  "opencv-python-headless>=4.10,<5",
+  "pillow>=11,<13",
+  "pydantic>=2.10,<3",
+  "python-dotenv>=1.0,<2",
+]
+
+[project.scripts]
+clash-jev = "clash_jev.cli:main"
+
+[dependency-groups]
+dev = ["pytest>=8,<10", "pytest-asyncio>=1,<2", "ruff>=0.12,<1"]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/clash_jev"]
+
+[tool.hatch.build.targets.sdist]
+include = [
+  "/src", "/tests", "/scripts", "/docs", "/fixtures/synthetic",
+  "/config/example.json", "/config/synthetic.json",
+  "/README.md", "/pyproject.toml", "/uv.lock", "/.env.example", "/.gitignore",
+]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 100
+
+[tool.ruff.lint]
+select = ["E", "F", "I"]

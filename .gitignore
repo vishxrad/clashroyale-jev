@@ -1,0 +1,24 @@
+.env
+.env.*
+!.env.example
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+*.egg-info/
+build/
+dist/
+runs/
+captures/
+config/local.json
+assets/cards/
+.DS_Store
+
+# Local investigation and generated media
+diagnostics/
+output/
+tmp/
+config/local.*.json
+.coverage
+htmlcov/

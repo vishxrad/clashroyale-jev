@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Jev plays Clash Royale</title><link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <main>
+    <section class="arena-panel window">
+      <div class="window-bar"><span id="canvas-title">Game</span><span id="source-label" class="window-right">CONNECTING</span></div>
+      <div id="overlay-controls" class="overlay-controls"><span class="control-label">OVERLAYS</span><label><input type="checkbox" id="overlay" checked> On</label><label><input type="checkbox" id="units-toggle" checked> Units</label><label><input type="checkbox" id="actions-toggle" checked> Actions</label><label><input type="checkbox" id="hud-toggle" checked> HUD</label><span id="frame-label">FRAME —</span></div>
+      <div class="canvas-wrap">
+        <div class="game-stage" id="game-stage"><img id="live-screen" hidden alt="Live MuMu gameplay"><video id="game-video" muted playsinline preload="metadata" hidden aria-label="Recorded Clash Royale gameplay"></video><canvas id="arena" aria-label="Game frame with perception overlay"></canvas><div id="observation-tag" class="observation-tag" hidden><i></i><span id="observation-age">MODEL OBSERVATION</span></div><div id="game-notices" class="game-notices"></div></div>
+        <div id="empty" class="empty-state"><span class="empty-symbol">◎</span><strong>Waiting for the arena</strong><p id="empty-message">Connecting to the game feed…</p></div>
+        <div class="arena-legend" id="arena-legend"><span><i class="ally-dot"></i> Ally</span><span><i class="enemy-dot"></i> Enemy</span><span><i class="action-dot"></i> Jev action</span><small id="overlay-detail">Model estimates</small></div>
+      </div>
+      <div id="live-controls" class="live-controls" hidden><span class="live-indicator"></span><span id="live-status">Connecting to MuMu…</span><select id="display-delay" aria-label="Display delay"><option value="5" selected>5s buffer</option><option value="0">Live</option></select><button id="start-bot">Start Jev</button><button id="stop-bot" disabled>Stop</button></div>
+      <div id="playback" class="playback"><button id="play" class="play-button" aria-label="Play replay">▶</button><span id="play-time" class="mono">0:00</span><input id="scrub" type="range" min="0" max="0" step="any" value="0" aria-label="Replay position"><span id="duration" class="mono">0:00</span><select id="speed" aria-label="Playback speed"><option value="0.5">0.5×</option><option value="1" selected>1×</option><option value="2">2×</option></select><label class="follow-label"><input type="checkbox" id="follow"> Latest</label></div>
+    </section>
+    <aside id="viewer" class="decisions-panel window" aria-label="Jev decisions">
+      <div class="window-bar"><h2>Decisions</h2><span id="trace-label" class="window-right">CONNECTING</span></div>
+      <div class="decision-scroll" tabindex="0" aria-label="Decision details">
+        <p id="decision-empty" class="decision-empty">Waiting for Jev’s first decision.</p>
+        <div id="decision-content" hidden>
+          <div class="chosen-move"><h3 id="decision-choice"></h3><span id="decision-status"></span></div>
+          <section class="decision-section"><h3>Hand <span id="hand-elixir"></span></h3><div id="decision-hand" class="decision-hand"></div></section>
+          <div class="decision-distributions">
+            <section class="decision-section"><h3 id="card-scores-title">Card choice</h3><div id="card-scores"></div></section>
+            <section class="decision-section"><h3>Placement</h3><div id="placement-scores"></div></section>
+          </div>
+          <section class="decision-section"><h3>Action JSON</h3><pre id="action-json" class="action-json"></pre></section>
+        </div>
+      </div>
+    </aside>
+    <aside id="calibrator" hidden>
+      <div class="eyebrow">SCREEN CALIBRATION</div><h1>Teach it the layout.</h1><p class="muted">Drag a rectangle around each region. Card regions should contain artwork only. Select a placement to move it with a click.</p>
+      <label class="field">Region or placement<select id="region"></select></label>
+      <button id="inspect">Test local recognition</button><pre id="inspection"></pre>
+      <h2>Capture a card template</h2><p class="muted">Label the card visible in one slot, then repeat with other screenshots until all eight have a template.</p>
+      <div class="row"><select id="slot" aria-label="Hand slot"><option value="0">Slot 1</option><option value="1">Slot 2</option><option value="2">Slot 3</option><option value="3">Slot 4</option></select><select id="card" aria-label="Card name"></select></div>
+      <button id="template">Save card artwork</button><p id="templates" class="muted"></p>
+      <details><summary>Edit deck, placements & recognition settings</summary><textarea id="config-json" rows="18" spellcheck="false" aria-label="Configuration JSON"></textarea><button id="apply-json">Apply JSON</button></details>
+      <label class="check"><input id="confirmed" type="checkbox"> I reviewed the arena, all four card crops, elixir bar, placement points and tower exclusion regions.</label>
+      <button id="save" class="primary">Save calibration</button><p id="save-result" role="status"></p>
+    </aside>
+  </main>
+  <div id="toast" role="status" hidden></div>
+  <script>
+    if (location.protocol === 'file:') {
+      document.body.replaceChildren();
+      const message = document.createElement('main');
+      message.style.cssText = 'font:16px/1.7 system-ui;max-width:700px;margin:80px auto;padding:24px';
+      const heading = document.createElement('h1'); heading.textContent = 'Open the local demo viewer';
+      const instruction = document.createElement('p'); instruction.textContent = 'Run this command from the clashroyale-jev project folder:';
+      const command = document.createElement('pre'); command.textContent = 'uv run clash-jev --config config/local.json demo --allow-api --execute --port 8767';
+      const link = document.createElement('a'); link.href = 'http://127.0.0.1:8767/'; link.textContent = 'Open Jev plays Clash Royale →';
+      message.append(heading, instruction, command, link); document.body.append(message);
+    }
+  </script>
+  <script type="module" src="/app.js"></script>
+</body>
+</html>
