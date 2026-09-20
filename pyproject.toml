@@ -27,7 +27,7 @@ packages = ["src/clash_jev"]
 
 [tool.hatch.build.targets.sdist]
 include = [
-  "/src", "/scripts", "/docs", "/config/example.json",
+  "/src", "/scripts", "/config/example.json",
   "/README.md", "/pyproject.toml", "/uv.lock", "/.env.example", "/.gitignore",
 ]
 

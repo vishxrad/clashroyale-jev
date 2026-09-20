@@ -64,7 +64,42 @@ The example geometry is not calibrated for your game. Each installation needs it
 
 ### 4. Choose runtime settings
 
-See [the demonstrated runtime settings](docs/runtime-settings.md) for the existing demo's model, two-stage decisions, freshness limits, and 14-type detection allowlist. Apply them to your own `config/local.json` after calibration. They are documented separately so the generic defaults and your saved layout stay explicit.
+After calibration, merge this `runtime` object into your `config/local.json`, keeping your layout and card templates. These are the settings used by the demo:
+
+```json
+{
+  "runtime": {
+    "capture_hz": 4.0,
+    "vision_model": "qwen-3.8-27b",
+    "jev_model": "jev-latest",
+    "staged_decisions": true,
+    "vision_max_tokens": 1600,
+    "vision_max_side": 1280,
+    "vision_grid": true,
+    "max_state_age_ms": 5500,
+    "action_cooldown_ms": 700,
+    "confirmation_timeout_ms": 5000,
+    "min_decision_confidence": 0.0,
+    "min_unit_confidence": 0.5,
+    "stop_after_battle": true,
+    "request_timeout_s": 10.0,
+    "min_model_interval_s": 0.5,
+    "max_api_calls": 360,
+    "vision_unit_types": [
+      "knight", "archers", "giant", "musketeer", "mini_pekka", "minions",
+      "goblins", "spear_goblins", "skeletons", "bomber", "prince",
+      "valkyrie", "baby_dragon", "cannon"
+    ]
+  }
+}
+```
+
+- **Jev decisions:** `staged_decisions` asks Jev to choose a card, then a placement. `min_decision_confidence: 0.0` lets its selected legal action proceed without a score cutoff; affordability, freshness, and placement checks still apply.
+- **State age:** the 5,500 ms allowance accommodates screenshot and model latency. Positions can still be stale, so the controller rechecks the current hand and elixir before input. This is separate from the browser's display buffer.
+- **Confirmation:** the 5,000 ms window allows card replacement and elixir spending evidence to arrive in different screenshots.
+- **Detection scope:** the 14-type list restricts the vision prompt/schema and filters results before tracking and Jev. It can reduce irrelevant detections, but real enemy units outside the list are also omitted. Set `vision_unit_types` to `null` for unrestricted detection. Spells remain playable cards, not battlefield units.
+
+The launch command's `--max-api-calls` overrides the budget in this file. Model access depends on your provider account; check access and billing if Qwen requests are rejected.
 
 ### 5. Start the browser demo
 
@@ -77,7 +112,9 @@ Open **http://127.0.0.1:8767/**, click **Start Jev**, and enter a battle manuall
 
 `--allow-api` explicitly enables billed model requests. `--max-api-calls` limits total attempts across both providers, including failed attempts. The run also stops at its time limit, a detected battle end, or a controller/provider failure condition.
 
-The default display has a **5-second buffer** to align observations with their source frames. Choose **Live** for immediate video. The buffer does not delay bot input. Model capture and the video feed run independently; old queued frames are skipped. The native stream uses the calibrated reference resolution, verified at 1440×2560 in the original setup.
+The **5-second display buffer** gives Qwen and Jev time to process a screenshot before its video frame reaches the viewer. Without it, labels from an older observation can appear over gameplay where troops have already moved. The browser delays the video and aligns observations with their source frames, while decisions follow their recorded action times. Five seconds provides headroom over the measured 3.39-second median processing cycle. It does not add a five-second wait to bot input or speed up inference. Choose **Live** to remove the display buffer.
+
+Model capture and the video feed run independently; old queued frames are skipped. The native stream uses the calibrated reference resolution, verified at 1440×2560 in the original setup.
 
 For terminal-only operation:
 
@@ -110,9 +147,17 @@ The demo configuration uses two-stage decisions. The generic example also suppor
 
 ## Results and limits
 
-The original project recorded a **3–0 Training Camp win** with 14 Jev-selected deployments using all eight cards, and an earlier complete match ended 1–3. In the winning run, median request latency was 1.45 s for Qwen and 0.37 s for Jev; the complete capture-to-decision/input median was 3.39 s across 30 Jev cycles. Those are measurements from one run, not a general win rate or performance guarantee.
+On 19 September 2026, a recorded run ended in a **3-0 Training Camp win** with 14 Jev-selected deployments using all eight cards. Human input was limited to entering the battle. An earlier complete match ended in a 1-3 loss.
 
-See [gameplay validation](docs/live-gameplay.md) and [model experiment notes](docs/live-api-results.md) for the historical measurements and limitations. Referenced screenshots and recordings remain local.
+| Measurement from the winning run | Median |
+| --- | --- |
+| Qwen perception request | 1.45 s |
+| Jev decision request | 0.37 s |
+| Complete capture-to-decision/input cycle | 3.39 s |
+
+The complete-cycle figure covers 30 Jev cycles, excluding menu frames and waits with no affordable card. The run made 44 Qwen requests and 44 Jev requests; two invalid or incomplete Qwen states were skipped. These are measurements from one run, not a general win rate or performance guarantee. Recordings and traces remain local and are not included in this repository.
+
+The winning run exposed a final-deployment confirmation issue when elixir regeneration obscured part of the spending. The current controller handles partial spending evidence together with card replacement. The figures above describe the original run.
 
 - Perception can miss or misidentify troops, teams, positions, and tower health.
 - The optional allowlist removes unsupported names before tracking and Jev; it also ignores real units outside that list.
