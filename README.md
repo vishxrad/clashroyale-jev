@@ -31,7 +31,7 @@ uv sync --locked --python 3.12
 cp .env.example .env
 ```
 
-Fill in `CEREBRAS_API_KEY` and `JEV_API_KEY` locally. The main bot uses these two providers. `OPENAI_API_KEY` is optional and used only by the separate saved-screenshot comparison script.
+Fill in `CEREBRAS_API_KEY` and `JEV_API_KEY` locally. These are the only API keys required for live gameplay.
 
 `.env` is ignored by Git. If you use a custom credential variable, set `runtime.cerebras_key_env` to its name; otherwise leave that setting unset or `null`. Credential values never belong in configuration JSON.
 
