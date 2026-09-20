@@ -1,5 +1,9 @@
 # Jev plays Clash Royale
 
+If you are here from my [X post](https://x.com/KashyapVisharad/status/2101319684578795577) (or even if you are not!) Here’s how to try it out :)
+
+I built this as a fun experiment, and it’s been really cool to see the response! Fair warning: this repo is very much vibe-coded, so please cut me some slack haha.
+
 A screenshot-driven Clash Royale bot: **Jev chooses the card and placement**, Qwen 3.8 27B on Cerebras reads the battlefield, and OpenCV recognizes the hand and elixir. The game runs on an Android device or emulator, controlled through ADB.
 
 The live browser demo puts gameplay beside Jev's current decision, hand, card/placement scores, and action JSON. Run it on your computer with your own emulator or Android device, API keys, and calibrated card templates. The browser connects to your local game; this repository does not host a public playable session.
@@ -145,25 +149,6 @@ Screenshot + capture timestamp
 
 The demo configuration uses two-stage decisions. The generic example also supports a single joint card/placement choice. WAIT is always available. A deployment is confirmed from a replacement card and observed elixir spending. The controller stops on an unresolved deployment rather than blindly repeating input.
 
-## Results and limits
-
-On 19 September 2026, a recorded run ended in a **3-0 Training Camp win** with 14 Jev-selected deployments using all eight cards. Human input was limited to entering the battle. An earlier complete match ended in a 1-3 loss.
-
-| Measurement from the winning run | Median |
-| --- | --- |
-| Qwen perception request | 1.45 s |
-| Jev decision request | 0.37 s |
-| Complete capture-to-decision/input cycle | 3.39 s |
-
-The complete-cycle figure covers 30 Jev cycles, excluding menu frames and waits with no affordable card. The run made 44 Qwen requests and 44 Jev requests; two invalid or incomplete Qwen states were skipped. These are measurements from one run, not a general win rate or performance guarantee. Recordings and traces remain local and are not included in this repository.
-
-The winning run exposed a final-deployment confirmation issue when elixir regeneration obscured part of the spending. The current controller handles partial spending evidence together with card replacement. The figures above describe the original run.
-
-- Perception can miss or misidentify troops, teams, positions, and tower health.
-- The optional allowlist removes unsupported names before tracking and Jev; it also ignores real units outside that list.
-- Positions can become stale during inference. The controller rechecks local hand/elixir before sending input.
-- Card and recognition confidence values are not calibrated probabilities of winning.
-- Enemy elixir is unknown. The bot receives no hidden game state.
 
 ## Code map
 
