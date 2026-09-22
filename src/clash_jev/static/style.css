@@ -1,7 +1,7 @@
 /*
  * Style the gameplay display, decision panel, overlays, and calibration controls.
- * Define the dark theme, responsive layout, and visual states shared by the
- * browser's live and recorded views.
+ * Define the standalone dark theme, light duel theme, responsive layout,
+ * and visual states for live and recorded views.
  */
 :root{color-scheme:dark;font:13px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:#ececeb;background:#171719;--muted:#8c8c94;--line:#303034;--panel:#1c1c1f;--accent:#9ce4b1;--blue:#9ccaf6;--enemy:#ff8c9e;--gold:#f6d899;--mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
 *{box-sizing:border-box}
@@ -189,41 +189,54 @@ main{max-width:none;grid-template-columns:minmax(0,.85fr) minmax(0,1.15fr);paddi
 @media(min-width:621px) and (max-width:800px){main{grid-template-columns:minmax(0,.85fr) minmax(0,1.15fr)}.window,.arena-panel.window,.decisions-panel.window{height:calc(100dvh - 24px);min-height:420px}.overlay-controls{gap:6px;padding-inline:10px}#frame-label{font-size:7px}}
 @media(max-width:620px){main{grid-template-columns:1fr;padding:10px;gap:12px}.arena-panel.window{height:85dvh;min-height:430px}.decisions-panel.window{height:650px;min-height:0}.calibrating main{grid-template-columns:1fr}.calibrating #calibrator{height:auto}}
 
-/* Compact match panels inherit their identity from the configured provider.
-   Standalone gameplay and calibration retain their existing layout and controls. */
-body.duel-embedded{--panel:#191b1f;--line:#30343a;background:#17191d}
-body.duel-embedded[data-provider=laya]{--accent:#c3b1ff}
+/* The duel uses a light match sheet, with blue Jev and burnt-orange Laya.
+   Scope the palette and layout so standalone playback/calibration keep their controls. */
+body.duel-embedded{color-scheme:light;--panel:#fffdf8;--line:#d4d0c5;--muted:#687069;--accent:#174d87;--selection:#e7eef6;--enemy:#ae3f2a;--gold:#8c5f12;color:#252c32;background:#fffdf8;font-family:Arial,Helvetica,sans-serif}
+body.duel-embedded[data-provider=laya]{--accent:#b94725;--selection:#faeade}
 .duel-embedded main{padding:0;gap:0;display:flex;flex-direction:column;height:100dvh}
 .duel-embedded .window{border:0;border-radius:0;max-height:none;box-shadow:none;min-height:0}
 .duel-embedded .arena-panel.window{height:calc(100dvh - 145px);min-height:350px;flex-shrink:0}
 .duel-embedded .decisions-panel.window{height:auto;flex:1;min-height:145px;border-top:1px solid var(--line)}
 .duel-embedded .empty-symbol{display:none}
-.duel-embedded .window-bar{height:33px;padding:0 15px;font-size:11px;color:#b4bac4}
+.duel-embedded .empty-state{background:#eeebe2;color:#353e42;inset:10px 12px 25px;border:1px solid var(--line)}
+.duel-embedded .empty-state strong{font:normal 21px/1.3 Georgia,"Times New Roman",serif}
+.duel-embedded .empty-state p{font-size:12px;color:var(--muted)}
+.duel-embedded .window-bar{height:35px;padding:0 15px;font-size:11px;color:#515d63;border-color:var(--line)}
 .duel-embedded .arena-panel>.window-bar{display:none}
-.duel-embedded .decisions-panel h2{color:var(--accent);font-weight:600;font-size:12px}
-.duel-embedded .window-right{font-size:7px;letter-spacing:.3px}
-.duel-embedded .overlay-controls{height:29px;padding:0 15px;gap:12px;font-size:9px}
+.duel-embedded .decisions-panel h2{color:var(--accent);font-family:Arial,Helvetica,sans-serif;font-weight:700;font-size:12px}
+.duel-embedded .window-right{font:9px Arial,Helvetica,sans-serif;letter-spacing:0;color:#747970}
+.duel-embedded .overlay-controls{height:31px;padding:0 15px;gap:12px;font-size:10px;color:#59625e;border-color:var(--line);background:#fffdf8}
 .duel-embedded .control-label,.duel-embedded #frame-label,.duel-embedded .arena-legend small{display:none}
-.duel-embedded .canvas-wrap{background:#131518;padding:9px 12px 25px}
-.duel-embedded .game-stage{border-color:#3a3d42;border-radius:3px}
-.duel-embedded .arena-legend{font-size:8px;gap:16px}
-.duel-embedded .live-controls{height:34px;padding:0 13px;background:#191b1f;font-size:9px}
-.duel-embedded .live-controls select{font-size:9px;padding:3px;max-width:100px}
+.duel-embedded .canvas-wrap{background:#eeebe2;padding:10px 12px 26px}
+.duel-embedded .game-stage{border-color:#b2b1a5;border-radius:0}
+.duel-embedded .arena-legend{font-size:9px;gap:14px;color:#646d67}
+.duel-embedded .live-controls{height:34px;padding:0 13px;background:#fffdf8;font-size:10px}
+.duel-embedded #live-status{color:#646d67}
+.duel-embedded .live-indicator{background:#8d9387;border-radius:0}
+.duel-embedded .live-controls select{font-size:10px;padding:3px;max-width:100px;background:#fffdf8;color:#424d52;border:1px solid #b8bbae;border-radius:0}
 .duel-embedded #start-bot,.duel-embedded #stop-bot{display:none}
-.duel-embedded .decision-scroll{padding:14px 15px}
-.duel-embedded .chosen-move{padding-bottom:12px;margin-bottom:15px}
-.duel-embedded .chosen-move h3{font-size:16px;line-height:1.4;color:#f0f1f4}
-.duel-embedded .chosen-move>span{font-size:10px}
+.duel-embedded .decision-scroll{padding:14px 15px;scrollbar-color:#b9baad transparent}
+.duel-embedded .chosen-move{padding-bottom:12px;margin-bottom:15px;border-color:var(--line)}
+.duel-embedded .chosen-move h3{font-size:17px;line-height:1.35;font-weight:600;color:#252c32}
+.duel-embedded .chosen-move>span{font-size:11px;color:#687069}
 .duel-embedded .decision-hand{grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}
-.duel-embedded .hand-card{background:#202328;border-color:#363b43;padding:8px 6px;border-radius:5px}
-.duel-embedded .hand-card.selected{border-color:var(--accent);background:color-mix(in srgb,var(--accent) 8%,#191b1f)}
-.duel-embedded .hand-card>span{font-size:10px}
-.duel-embedded .hand-card small{font-size:8px}
-.duel-embedded .decision-section{margin-bottom:18px}
-.duel-embedded .decision-section h3{font-size:11px;margin-bottom:10px}
+.duel-embedded .hand-card{background:transparent;border:0;border-bottom:2px solid #d4d0c5;padding:9px 7px;border-radius:0}
+.duel-embedded .hand-card.selected{border-color:var(--accent);background:var(--selection)}
+.duel-embedded .hand-card>span{font-size:11px;color:#303a42}
+.duel-embedded .hand-card.selected>span{color:var(--accent);font-weight:700}
+.duel-embedded .hand-card small{font-size:9px;color:#646d67}
+.duel-embedded .decision-section{margin-bottom:20px}
+.duel-embedded .decision-section h3{font-size:12px;font-weight:600;color:#3b474b;margin-bottom:10px}
 .duel-embedded .decision-distributions{grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}
-.duel-embedded .score-caption{font-size:10px;gap:6px}
-.duel-embedded .action-json{font-size:10px;color:#a9b1be}
+.duel-embedded .score-caption{font-size:11px;gap:6px;color:#646d67}
+.duel-embedded .decision-score.selected .score-caption{color:var(--accent);font-weight:600}
+.duel-embedded .score-bar{height:4px;border-radius:0;background:#e7e4da}
+.duel-embedded .score-bar>i{background:#a4aaa2}
+.duel-embedded .decision-score.selected .score-bar>i{background:var(--accent)}
+.duel-embedded .action-json{font-size:11px;color:#505d64;border-left:2px solid #d4d0c5;padding-left:12px}
+.duel-embedded .play-button{background:#fffdf8;border-color:#b8bbae;border-radius:0}
+.duel-embedded .playback select,.duel-embedded .mono,.duel-embedded .follow-label{color:#646d67}
+.duel-embedded #toast{background:#fffdf8;color:#303a42;border-color:#a5a99e;border-radius:0;box-shadow:none}
 @media(min-width:520px){
   .duel-embedded main{display:grid;grid-template-columns:minmax(0,.95fr) minmax(0,1.05fr)}
   .duel-embedded .arena-panel.window,.duel-embedded .decisions-panel.window{height:100dvh;min-height:0}
