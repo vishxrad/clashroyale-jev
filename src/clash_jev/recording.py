@@ -81,7 +81,7 @@ class Recorder:
         model_latencies = [
             e["latency_ms"]["total"]
             for e in self.events
-            if "latency_ms" in e and e.get("decision", {}).get("source") == "jev"
+            if "latency_ms" in e and e.get("decision", {}).get("source") in {"jev", "laya"}
         ]
         summary = {
             "mode": self.mode,

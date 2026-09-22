@@ -20,7 +20,7 @@ from pathlib import Path
 
 from .config import Config
 from .device import ADB
-from .providers import Gateway, keys
+from .providers import Gateway, keys, require_credentials
 from .runner import run_live
 
 
@@ -254,8 +254,7 @@ class LiveDemo:
             if not self.stream.status()["connected"]:
                 raise ValueError("Wait for the live device feed to connect")
             # Credential values never enter the browser or recordings.
-            if not all(keys(self.env, self.config.runtime.cerebras_key_env).values()):
-                raise ValueError("Both Cerebras and Jev credentials are required")
+            require_credentials(self.config, keys(self.env, self.config.runtime.cerebras_key_env))
             self.run = self.root / "runs" / f"live-demo-{time.time_ns()}"
             self.running, self.stopping, self.error = True, False, None
             self.thread = threading.Thread(target=self._worker, daemon=True)

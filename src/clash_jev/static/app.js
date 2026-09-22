@@ -24,6 +24,13 @@ async function post(path, body) {
   const data = await r.json(); if (!r.ok) throw Error(data.error || `HTTP ${r.status}`); return data;
 }
 function text(id, value) { const el = $(id), next = String(value); if (el.textContent !== next) el.textContent = next; }
+const policyName = () => config?.runtime?.decision_provider === 'laya' ? 'Laya' : 'Jev';
+function labelPolicy() {
+  const name = policyName();
+  document.title = `${name} plays Clash Royale`;
+  $('viewer').setAttribute('aria-label', `${name} decisions`);
+  text('action-legend', `${name} action`);
+}
 function element(tag, value, cls) { const el = document.createElement(tag); el.textContent = value; if (cls) el.className = cls; return el; }
 function toast(message) { text('toast', message); $('toast').hidden = false; clearTimeout(toast.timeout); toast.timeout = setTimeout(() => $('toast').hidden = true, 2500); }
 function overlayScale() { return canvas.width / (stageCssWidth || canvas.width); }
@@ -192,7 +199,7 @@ function renderDecision(frame) {
   const available = Boolean(decision && decision.source !== 'controller');
   $('decision-empty').hidden = available; $('decision-content').hidden = !available;
   if (!available) {
-    text('decision-empty', frame?.status?.includes('error') ? `Decision unavailable · ${pretty(frame.status)}` : 'Waiting for Jev’s next decision.');
+    text('decision-empty', frame?.status?.includes('error') ? `Decision unavailable · ${pretty(frame.status)}` : `Waiting for ${policyName()}’s next decision.`);
     return;
   }
   text('decision-choice', action?.card ? `${title(action.card)} → ${placement(action)}` : 'Wait & observe');
@@ -314,6 +321,7 @@ async function fetchLive() {
   }
   if (data.manifest) {
     config = data.manifest.config; summary = data.summary;
+    labelPolicy();
     liveOrigin = data.manifest.started_monotonic ?? data.now;
     media = {capture_clock_offset_s: -liveOrigin, elapsed_offset_s: 0, align_observations: displayDelay > 0};
     events = data.events; controls = data.control; log = deriveLog(events, controls, media, config.runtime.vision_unit_types);
@@ -323,12 +331,13 @@ async function fetchLive() {
   $('empty').hidden = connected && displayClock > 0;
   if (!connected) text('empty-message', data.stream.error ?? 'Connecting to the live MuMu display…');
   text('source-label', connected ? displayDelay ? 'MUMU · 5s BUFFER' : 'LIVE · MUMU' : 'CONNECTING');
-  text('trace-label', data.bot.running ? 'JEV RUNNING' : 'JEV STOPPED');
-  const state = data.bot.stopping ? 'Stopping Jev…' : data.bot.running ? 'Jev running' : data.bot.error ? data.bot.error : summary.stop_reason ? `Stopped · ${pretty(summary.stop_reason)}` : 'Live game · Jev is idle';
+  const name = policyName();
+  text('trace-label', `${name.toUpperCase()} ${data.bot.running ? 'RUNNING' : 'STOPPED'}`);
+  const state = data.bot.stopping ? `Stopping ${name}…` : data.bot.running ? `${name} running` : data.bot.error ? data.bot.error : summary.stop_reason ? `Stopped · ${pretty(summary.stop_reason)}` : `Live game · ${name} is idle`;
   text('live-status', connected ? state : 'Waiting for device video');
   $('start-bot').disabled = data.bot.running || !connected;
   $('stop-bot').disabled = !data.bot.running || data.bot.stopping;
-  text('start-bot', data.bot.execute ? 'Start Jev' : 'Start observer');
+  text('start-bot', data.bot.execute ? `Start ${name}` : 'Start observer');
   updateLiveTimeline();
   draw();
   updateClock();
@@ -452,6 +461,7 @@ async function main() {
   } else {
     const manifest = await get('/api/manifest'); runMode = manifest.mode; config = manifest.config;
     if (!config) throw Error('No manifest found. Start a run, then open its viewer.');
+    labelPolicy();
     media = await get('/api/media'); hasVideo = Boolean(media.url && Number.isFinite(media.elapsed_offset_s) && Number.isFinite(media.capture_clock_offset_s));
     const size = config.layout.reference_size ?? [1440, 2560]; canvas.width = size[0]; canvas.height = size[1]; $('game-stage').style.aspectRatio = `${size[0]} / ${size[1]}`;
     fitStage();

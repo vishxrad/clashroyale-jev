@@ -125,6 +125,50 @@ uv run clash-jev --config config/local.json run --allow-api --execute \
 
 Each live run saves its observations and decisions under `runs/`. Use `uv run clash-jev --help` for the capture, calibration, inspection, and recording commands.
 
+## Jev versus Laya in a friendly battle
+
+The experimental `duel` command runs two independent bot sessions with a shared dashboard: Jev controls one emulator and [Laya](https://huggingface.co/convaiinnovations/laya) controls the other. Both use Qwen for battlefield perception and OpenCV for the hand and elixir. Laya runs locally and needs no decision API key.
+
+1. Open two MuMu instances with separate Clash Royale accounts. Both accounts need access to a common friendly-battle mode. Connect each instance's ADB port and use `adb devices -l` to get the two distinct serials.
+2. Equip the same starter deck on both accounts. Calibrate each screen separately, saving `config/local.json` for Jev and `config/local-laya.json` for Laya. Use the same normalized placement options and card descriptions. Each configuration can have its own screenshot regions and card templates.
+
+For the second screen, start from Jev's configuration so the deck and normalized placements stay matched, then adjust its capture regions and templates:
+
+```bash
+uv run clash-jev capture --serial LAYA_DEVICE_SERIAL --output captures/laya-battle.png
+uv run clash-jev --config config/local.json calibrate captures/laya-battle.png \
+  --output config/local-laya.json --port 8766
+```
+
+For later calibration captures, load `--config config/local-laya.json` and keep `--output config/local-laya.json`. Both local configuration files are ignored by Git.
+
+3. Download and check the local model before starting a match:
+
+```bash
+uv run --extra laya clash-jev laya-warmup
+```
+
+The first launch downloads the English Laya checkpoint and its Python dependencies. The SDK selects an available GPU, including Apple MPS, or CPU. Use `--device cpu` with the warmup command to check CPU loading. To select the device for matches, set `runtime.laya_device` in the Laya configuration to `auto`, `mps`, `cuda`, or `cpu`; `runtime.laya_model` selects the checkpoint and defaults to `convaiinnovations/laya`.
+
+4. Start both dashboards:
+
+```bash
+uv run --extra laya clash-jev duel --allow-api --execute \
+  --jev-config config/local.json --laya-config config/local-laya.json \
+  --jev-serial JEV_DEVICE_SERIAL --laya-serial LAYA_DEVICE_SERIAL \
+  --seconds 360 --max-api-calls 600 --port 8780
+```
+
+Open **http://127.0.0.1:8780/**, wait for both feeds, click **Start both**, and enter a friendly battle manually. **Stop both** stops model processing and taps. The individual dashboards run on ports 8781 and 8782. These three ports must be available. Omit `--execute` to observe decisions without sending taps.
+
+The launcher checks that the serials differ and that the decks and placement options match. It copies Jev's runtime settings to both players, except for Laya's model/device selection, then enables the same compact, two-stage choice format and removes the score cutoff for both. Each player has a separate controller, capture loop, recording, and API budget; `--max-api-calls` applies per player. Cold model loading happens before either player starts. Match manifests under `runs/duel-*.json` link the two run directories.
+
+Laya's root checkpoint has a 512-token context, so duel mode keeps the hand and towers plus at most six observed units, prioritizing enemies closest to our side. Both providers receive this compact format with at most 12 candidate placements for the selected card. Laya rejects requests that its tokenizer would truncate. The usual single-player Jev command retains its original input format.
+
+For a useful comparison, keep decks, levels, perception settings, and placement options matched, then swap which account each model controls for another round. Each model sees only its own screen. The five-second buffers affect the displayed video, and each bot acts as soon as its own decision is ready. This compares the complete running agents, including inference speed and perception errors.
+
+Laya is an experimental opponent here. Its authors report weak base-checkpoint performance on unfamiliar typed-decision tasks, and their benchmark-tuned checkpoint was not trained for Clash Royale. A valid card choice does not establish tactical skill. Local saved-state probes verify the adapter; a live head-to-head match still requires two prepared accounts.
+
 ## How it works
 
 ```text
@@ -177,6 +221,9 @@ The winning run exposed a final-deployment confirmation issue when elixir regene
 | `src/clash_jev/device.py` | ADB capture, taps, latest-frame handling |
 | `src/clash_jev/runner.py` | Perception, HUD, decision and control loop |
 | `src/clash_jev/live_demo.py` | Continuous device stream and browser Start/Stop controls |
+| `src/clash_jev/laya_policy.py` | Optional local Laya inference and context checks |
+| `src/clash_jev/decision_input.py` | Shared compact state and choices for duel mode |
+| `src/clash_jev/duel.py` | Two emulator sessions and shared match controls |
 | `src/clash_jev/webui.py`, `static/` | Calibration, replay and live interface |
 
 Local credentials, calibration, card templates, screenshots, runs, diagnostics, and generated media are excluded from Git.

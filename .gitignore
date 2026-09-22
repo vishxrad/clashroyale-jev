@@ -20,5 +20,6 @@ diagnostics/
 output/
 tmp/
 config/local.*.json
+config/local-*.json
 .coverage
 htmlcov/

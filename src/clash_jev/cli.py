@@ -19,7 +19,7 @@ from PIL import Image
 from .config import Config
 from .device import ADB
 from .hud import HUDReader
-from .providers import CerebrasVision, Gateway, JevPolicy, keys
+from .providers import CerebrasVision, Gateway, keys, make_policy, require_credentials
 from .replay import replay
 from .runner import run_live
 from .webui import serve
@@ -32,6 +32,21 @@ def parser() -> argparse.ArgumentParser:
     p.add_argument("--config", type=Path, default=Path("config/example.json"))
     p.add_argument("--root", type=Path, default=Path.cwd(), help="Root for card template paths")
     sub = p.add_subparsers(dest="command", required=True)
+    warmup = sub.add_parser("laya-warmup", help="Download and preload a local Laya checkpoint")
+    warmup.add_argument("--model", default="convaiinnovations/laya")
+    warmup.add_argument("--device", choices=["auto", "cpu", "mps", "cuda"], default="auto")
+    duel = sub.add_parser("duel", help="Two emulator dashboards with Jev versus local Laya")
+    duel.add_argument("--jev-config", type=Path, default=Path("config/local.json"))
+    duel.add_argument("--laya-config", type=Path, required=True)
+    duel.add_argument("--jev-serial", required=True)
+    duel.add_argument("--laya-serial", required=True)
+    duel.add_argument("--adb")
+    duel.add_argument("--env", type=Path, default=Path(".env"))
+    duel.add_argument("--port", type=int, default=8780)
+    duel.add_argument("--seconds", type=float, default=360)
+    duel.add_argument("--max-api-calls", type=int, default=600)
+    duel.add_argument("--allow-api", action="store_true")
+    duel.add_argument("--execute", action="store_true")
     sub.add_parser(
         "doctor", help="Check configuration, templates and key presence without model calls"
     )
@@ -116,7 +131,9 @@ async def probe(args, config):
             result = await CerebrasVision(gateway).observe(image)
         else:
             state = State.model_validate_json(args.state.read_text())
-            result = await JevPolicy(gateway).decide(state, candidates(config, state))
+            policy = make_policy(gateway)
+            await policy.prepare()
+            result = await policy.decide(state, candidates(config, state))
         print(result.model_dump_json(indent=2))
         print(json.dumps({"usage": gateway.usage}), file=sys.stderr)
     finally:
@@ -126,10 +143,21 @@ async def probe(args, config):
 def main(argv=None):
     args = parser().parse_args(argv)
     try:
-        if args.command in {"run", "demo", "perceive", "decide"} and not args.allow_api:
+        if args.command in {"run", "demo", "duel", "perceive", "decide"} and not args.allow_api:
             raise ValueError(
                 "Model API calls are disabled. Add --allow-api only when ready to spend."
             )
+        if args.command == "laya-warmup":
+            from .laya_policy import load_laya
+
+            agent, _ = load_laya(args.model, args.device)
+            print(json.dumps({"model": args.model, "device": str(agent.device), "ready": True}))
+            return
+        if args.command == "duel":
+            from .duel import serve_duel
+
+            serve_duel(args)
+            return
         if args.command == "capture":
             asyncio.run(capture_one(args))
             return
@@ -206,8 +234,7 @@ def main(argv=None):
                     raise ValueError("--max-api-calls must be positive")
                 config.runtime.max_api_calls = args.max_api_calls
             credentials = keys(args.env, config.runtime.cerebras_key_env)
-            if not all(credentials.values()):
-                raise ValueError("Both Cerebras and Jev credentials are required")
+            require_credentials(config, credentials)
             output = args.output or output_path("live")
 
             async def live():

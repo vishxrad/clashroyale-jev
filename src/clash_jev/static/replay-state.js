@@ -70,8 +70,8 @@ export function deriveLog(events, controls, media = {}, allowedTypes = null) {
     if (e.action?.card) {
       const sent = e.status === 'sent';
       add(time, sent ? 'sent' : 'choice', `${title(e.action.card)} → ${placement(e.action)}`, sent ? `Slot ${e.action.slot + 1} · ${e.action.cost} elixir · taps sent` : `${pretty(e.status)} · selected by ${e.decision?.source ?? 'policy'}`, 'action', e.action);
-    } else if (e.status === 'wait' && e.decision?.source === 'jev') {
-      add(time, 'choice', 'Wait & observe', `${state?.hud?.elixir ?? '?'} elixir · Jev selected WAIT`);
+    } else if (e.status === 'wait' && ['jev', 'laya'].includes(e.decision?.source)) {
+      add(time, 'choice', 'Wait & observe', `${state?.hud?.elixir ?? '?'} elixir · ${title(e.decision.source)} selected WAIT`);
     }
     if (e.status?.includes('error') || e.status?.includes('unconfirmed') || e.status?.startsWith('rejected')) add(time, 'controller', pretty(e.status), e.error ?? 'See the recorded event for details.', 'error');
   }

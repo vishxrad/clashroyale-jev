@@ -17,7 +17,7 @@
       <div class="canvas-wrap">
         <div class="game-stage" id="game-stage"><img id="live-screen" hidden alt="Live MuMu gameplay"><video id="game-video" muted playsinline preload="metadata" hidden aria-label="Recorded Clash Royale gameplay"></video><canvas id="arena" aria-label="Game frame with perception overlay"></canvas><div id="observation-tag" class="observation-tag" hidden><i></i><span id="observation-age">MODEL OBSERVATION</span></div><div id="game-notices" class="game-notices"></div></div>
         <div id="empty" class="empty-state"><span class="empty-symbol">◎</span><strong>Waiting for the arena</strong><p id="empty-message">Connecting to the game feed…</p></div>
-        <div class="arena-legend" id="arena-legend"><span><i class="ally-dot"></i> Ally</span><span><i class="enemy-dot"></i> Enemy</span><span><i class="action-dot"></i> Jev action</span><small id="overlay-detail">Model estimates</small></div>
+        <div class="arena-legend" id="arena-legend"><span><i class="ally-dot"></i> Ally</span><span><i class="enemy-dot"></i> Enemy</span><span><i class="action-dot"></i> <span id="action-legend">Jev action</span></span><small id="overlay-detail">Model estimates</small></div>
       </div>
       <div id="live-controls" class="live-controls" hidden><span class="live-indicator"></span><span id="live-status">Connecting to MuMu…</span><select id="display-delay" aria-label="Display delay"><option value="5" selected>5s buffer</option><option value="0">Live</option></select><button id="start-bot">Start Jev</button><button id="stop-bot" disabled>Stop</button></div>
       <div id="playback" class="playback"><button id="play" class="play-button" aria-label="Play replay">▶</button><span id="play-time" class="mono">0:00</span><input id="scrub" type="range" min="0" max="0" step="any" value="0" aria-label="Replay position"><span id="duration" class="mono">0:00</span><select id="speed" aria-label="Playback speed"><option value="0.5">0.5×</option><option value="1" selected>1×</option><option value="2">2×</option></select><label class="follow-label"><input type="checkbox" id="follow"> Latest</label></div>
@@ -25,7 +25,7 @@
     <aside id="viewer" class="decisions-panel window" aria-label="Jev decisions">
       <div class="window-bar"><h2>Decisions</h2><span id="trace-label" class="window-right">CONNECTING</span></div>
       <div class="decision-scroll" tabindex="0" aria-label="Decision details">
-        <p id="decision-empty" class="decision-empty">Waiting for Jev’s first decision.</p>
+        <p id="decision-empty" class="decision-empty">Waiting for the first decision.</p>
         <div id="decision-content" hidden>
           <div class="chosen-move"><h3 id="decision-choice"></h3><span id="decision-status"></span></div>
           <section class="decision-section"><h3>Hand <span id="hand-elixir"></span></h3><div id="decision-hand" class="decision-hand"></div></section>

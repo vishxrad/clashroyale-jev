@@ -20,6 +20,7 @@ from dotenv import dotenv_values
 from PIL import Image, ImageDraw
 
 from .config import Config
+from .decision_input import compact_question
 from .models import WAIT, Action, Battlefield, Decision, State
 
 VISION_PROMPT = """Extract the visible Clash Royale battlefield. Return JSON only.
@@ -258,9 +259,14 @@ class CerebrasVision:
             raise ProviderFailure("Vision returned an invalid or incomplete battlefield") from None
 
 
-class JevPolicy:
+class ChoicePolicy:
+    """Share the card-then-placement workflow across decision providers."""
+
     def __init__(self, gateway: Gateway):
         self.gateway = gateway
+
+    async def prepare(self):
+        """Prepare provider resources before capturing a decision frame."""
 
     async def decide(self, state: State, actions: list[Action]) -> Decision:
         if not self.gateway.config.runtime.staged_decisions:
@@ -294,6 +300,8 @@ class JevPolicy:
             card_decision.card_confidence = card_decision.confidence
             return card_decision
         positions = [a for a in actions if a.card == selected.card]
+        if self.gateway.config.runtime.compact_decisions:
+            positions = positions[:12]
         decision = await self.choose(
             state,
             positions,
@@ -305,41 +313,49 @@ class JevPolicy:
         decision.card_confidence = card_decision.confidence
         return decision
 
+
+class JevPolicy(ChoicePolicy):
+    """Submit typed choices to Jev while preserving the original default input."""
+
     async def choose(self, state: State, actions: list[Action], instructions: str) -> Decision:
         if not 1 <= len(actions) <= 255:
             raise ValueError("Jev needs 1–255 complete action choices")
         criteria = {action.id: action.description for action in actions}
         if len(criteria) != len(actions):
             raise ValueError("Action IDs must be unique")
-        result = await self.gateway.post(
-            "jev",
-            "https://api.typesafe.ai/v1/systemone",
-            {
-                "model": self.gateway.config.runtime.jev_model,
-                "state": {
-                    "game": state.model_dump(mode="json"),
-                    "deck": [
-                        {"card": c.id, "cost": c.cost, "kind": c.kind, "description": c.description}
-                        for c in self.gateway.config.deck
-                    ],
-                },
-                "questions": {
-                    "action": {
-                        "type": "choice",
-                        "instructions": instructions,
-                        "criteria": criteria,
-                    }
-                },
+        mapping = {key: key for key in criteria}
+        payload = {
+            "model": self.gateway.config.runtime.jev_model,
+            "state": {
+                "game": state.model_dump(mode="json"),
+                "deck": [
+                    {"card": c.id, "cost": c.cost, "kind": c.kind, "description": c.description}
+                    for c in self.gateway.config.deck
+                ],
             },
-        )
+            "questions": {
+                "action": {
+                    "type": "choice",
+                    "instructions": instructions,
+                    "criteria": criteria,
+                }
+            },
+        }
+        if self.gateway.config.runtime.compact_decisions:
+            payload["state"], payload["questions"]["action"], mapping = compact_question(
+                self.gateway.config, state, actions
+            )
+        result = await self.gateway.post("jev", "https://api.typesafe.ai/v1/systemone", payload)
         try:
             answer = result["answers"]["action"]
             if answer["type"] != "choice":
                 raise ValueError("Wrong answer type")
             decision = Decision(
-                choice=answer["choice"],
+                choice=mapping[answer["choice"]],
                 confidence=answer["confidence"],
-                probabilities=answer["probabilities"],
+                probabilities={
+                    mapping[key]: value for key, value in answer["probabilities"].items()
+                },
                 source="jev",
             )
             if decision.choice not in criteria or set(decision.probabilities) != set(criteria):
@@ -349,3 +365,22 @@ class JevPolicy:
             return decision
         except (KeyError, TypeError, ValueError):
             raise ProviderFailure("Jev returned an invalid action distribution") from None
+
+
+def make_policy(gateway: Gateway) -> ChoicePolicy:
+    """Load the optional local adapter only when the configuration selects it."""
+    if gateway.config.runtime.decision_provider == "laya":
+        from .laya_policy import LayaPolicy
+
+        return LayaPolicy(gateway)
+    return JevPolicy(gateway)
+
+
+def require_credentials(config: Config, credentials: dict[str, str | None]):
+    """Require vision credentials plus a Jev key only for the Jev player."""
+    required = ["cerebras"]
+    if config.runtime.decision_provider == "jev":
+        required.append("jev")
+    missing = [name for name in required if not credentials.get(name)]
+    if missing:
+        raise ValueError("Missing API credentials: " + ", ".join(missing))

@@ -76,6 +76,10 @@ class Recognition(Model):
 
 
 class Runtime(Model):
+    decision_provider: Literal["jev", "laya"] = "jev"
+    compact_decisions: bool = False
+    laya_model: str = "convaiinnovations/laya"
+    laya_device: Literal["auto", "cpu", "mps", "cuda"] = "auto"
     capture_hz: float = Field(default=4, gt=0, le=30)
     max_state_age_ms: int = Field(default=1500, ge=100, le=10000)
     action_cooldown_ms: int = Field(default=700, ge=100)

@@ -1,0 +1,54 @@
+<!doctype html>
+<!-- Shared controls and side-by-side dashboards for two independent bot sessions. -->
+<html lang="en">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Jev vs Laya</title>
+  <style>
+    :root{color-scheme:dark;font:14px/1.5 system-ui,sans-serif;background:#171719;color:#ececeb}
+    *{box-sizing:border-box}body{margin:0}header{display:flex;align-items:center;gap:12px;padding:14px 20px;border-bottom:1px solid #303034}
+    h1{font-size:18px;margin:0;margin-right:auto}button{font:inherit;padding:7px 14px;border:1px solid #424247;border-radius:6px;background:#24272a;color:inherit;cursor:pointer}
+    button:disabled{opacity:.45;cursor:default}#start{background:#243b2c}#message{margin:8px 20px;color:#aeb3b0;min-height:22px}
+    main{display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:0 12px 12px}section{min-width:0;border:1px solid #303034;border-radius:8px;overflow:hidden}
+    .player{display:flex;gap:12px;align-items:center;padding:10px 14px;background:#1c1c1f}.status{margin-left:auto;font-size:12px;color:#aeb3b0}
+    a{color:inherit}iframe{display:block;border:0;width:100%;height:calc(100vh - 160px);min-height:500px;background:#171719}
+    @media(max-width:800px){main{grid-template-columns:1fr}header{flex-wrap:wrap}iframe{height:85vh}}
+  </style>
+</head>
+<body>
+  <header><h1>Jev vs Laya</h1><button id="start" disabled>Start both</button><button id="stop">Stop both</button></header>
+  <p id="message">Connect both emulators, start the bots, then enter a friendly battle.</p>
+  <main>
+    <section><div class="player"><a href="http://127.0.0.1:{{JEV_PORT}}/" target="_blank" rel="noopener">Jev</a><span id="jev-status" class="status">Connecting</span></div><iframe title="Jev gameplay and decisions" src="http://127.0.0.1:{{JEV_PORT}}/"></iframe></section>
+    <section><div class="player"><a href="http://127.0.0.1:{{LAYA_PORT}}/" target="_blank" rel="noopener">Laya</a><span id="laya-status" class="status">Connecting</span></div><iframe title="Laya gameplay and decisions" src="http://127.0.0.1:{{LAYA_PORT}}/"></iframe></section>
+  </main>
+  <script>
+    // Poll controller state independently of each child's buffered gameplay video.
+    const start = document.getElementById('start'), message = document.getElementById('message');
+    let busy = false;
+    function show(data) {
+      for (const name of ['jev', 'laya']) {
+        const p = data[name];
+        document.getElementById(`${name}-status`).textContent = p.error || (p.stopping ? 'Stopping' : p.running ? 'Running' : p.stop_reason || (p.connected ? 'Ready' : 'Waiting for emulator'));
+      }
+      start.disabled = busy || Object.values(data).some(p => !p.connected || p.running || p.stopping);
+    }
+    async function poll() {
+      try { const r = await fetch('/api/duel'); if (!r.ok) throw Error('Dashboard unavailable'); show(await r.json()); }
+      catch (e) { start.disabled = true; message.textContent = e.message; }
+      setTimeout(poll, 1000);
+    }
+    for (const action of ['start', 'stop']) document.getElementById(action).onclick = async () => {
+      busy = true; start.disabled = true;
+      try {
+        const r = await fetch(`/api/duel/${action}`, {method:'POST'}), data = await r.json();
+        if (!r.ok) throw Error(data.error || 'Control request failed');
+        message.textContent = action === 'start' ? 'Both bots started. Enter the friendly battle in Clash Royale.' : 'Both bots are stopping. Gameplay feeds stay visible.';
+        show(data);
+      } catch (e) { message.textContent = e.message; }
+      finally { busy = false; }
+    };
+    poll();
+  </script>
+</body>
+</html>

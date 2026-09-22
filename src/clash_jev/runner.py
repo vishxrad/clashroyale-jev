@@ -18,7 +18,7 @@ from .control import Controller
 from .device import ADB, Frame, LatestFrames
 from .hud import HUDReader
 from .models import WAIT, Battlefield, Decision
-from .providers import BudgetExhausted, CerebrasVision, Gateway, JevPolicy, ProviderFailure
+from .providers import BudgetExhausted, CerebrasVision, Gateway, ProviderFailure, make_policy
 from .recording import Recorder
 from .state import Tracker
 
@@ -114,11 +114,11 @@ async def run_live(
     if reader.missing_templates():
         raise ValueError("Capture card templates first: " + ", ".join(reader.missing_templates()))
     await device.select()
+    policy = make_policy(gateway)
+    await policy.prepare()
     recorder = Recorder(output, config, "live" if execute else "live-dry-run")
     controller = Controller(config, device, reader, execute=execute)
-    pipeline = Pipeline(
-        config, reader, CerebrasVision(gateway), JevPolicy(gateway), controller, recorder
-    )
+    pipeline = Pipeline(config, reader, CerebrasVision(gateway), policy, controller, recorder)
     frames = LatestFrames(device, config.runtime.capture_hz)
     capture = asyncio.create_task(frames.produce())
     after, errors = -1, 0

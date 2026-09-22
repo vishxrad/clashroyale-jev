@@ -12,6 +12,9 @@ dependencies = [
   "python-dotenv>=1.0,<2",
 ]
 
+[project.optional-dependencies]
+laya = ["laya==0.3.5"]
+
 [project.scripts]
 clash-jev = "clash_jev.cli:main"
 
