@@ -9,48 +9,46 @@
     *{box-sizing:border-box}body{margin:0}button,a{-webkit-tap-highlight-color:transparent}button{font:inherit;cursor:pointer}
     button:disabled{color:#888981!important;background:#e4e0d6!important;border-color:#c8c4b9!important;cursor:default}
     button:focus-visible,a:focus-visible{outline:2px solid #174d87;outline-offset:4px}
-    .match-bar{height:76px;margin:0 24px;display:flex;align-items:center;justify-content:space-between;gap:20px;border-bottom:2px solid #303a42}
-    h1{font-size:25px;line-height:1.1;font-weight:600;letter-spacing:-.5px;margin:0}.versus{color:#737268;margin:0 4px}
-    .match-context{font-size:11px;color:#66695f;margin:5px 0 0}.controls{display:flex;gap:8px;flex-shrink:0}
-    .controls button{border:1px solid #8e928c;border-radius:0;background:#fffdf8;color:#303a42;padding:8px 16px;font-size:12px;font-weight:600}
+    .match-bar{height:42px;margin:0 12px;display:flex;align-items:center;justify-content:space-between;gap:20px;border-bottom:1px solid #bcb8ac}
+    h1{font-size:16px;line-height:1.1;font-weight:600;letter-spacing:-.5px;margin:0}.versus{color:#737268;margin:0 4px}
+    .controls{display:flex;gap:8px;flex-shrink:0}
+    .controls button{border:1px solid #8e928c;border-radius:0;background:#fffdf8;color:#303a42;padding:5px 12px;font-size:11px;font-weight:600}
     .controls #start{background:#174d87;color:#fff;border-color:#174d87}.controls button:hover:not(:disabled){background:#e9e4d8}.controls #start:hover:not(:disabled){background:#103d6d}
-    #message{margin:10px 24px;font-size:12px;color:#a23520}
-    .players{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0;padding:0 24px 20px}
-    .player{--accent:#174d87;min-width:0;background:#f3f0e8;border:0;overflow:hidden;display:flex;flex-direction:column;height:calc(100dvh - 96px);min-height:600px}
-    .player.jev{margin-right:20px}.player.laya{--accent:#b94725;padding-left:20px;border-left:1px solid #bcb8ac}
-    .player-heading{padding:17px 0 15px;display:flex;justify-content:space-between;align-items:center;gap:14px;border-bottom:2px solid var(--accent);background:#f3f0e8}
-    .identity{min-width:0}.identity h2{font-size:38px;line-height:1;font-weight:600;letter-spacing:-1.4px;margin:0 0 7px;color:var(--accent)}
-    .identity p{margin:0;color:#5b625e;font-size:11px}.identity .account{margin-top:8px;font-size:12px;color:#252c32;overflow-wrap:anywhere}
-    .account-label{color:#72766e;margin-right:4px}.player-meta{display:flex;flex-direction:column;align-items:flex-end;gap:12px;flex-shrink:0}
+    #message{margin:10px 12px;font-size:12px;color:#a23520}
+    .players{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0;padding:0 12px 8px}
+    .player{--accent:#174d87;min-width:0;background:#f3f0e8;border:0;overflow:hidden;display:flex;flex-direction:column;height:calc(100dvh - 50px);min-height:420px}
+    .player.jev{margin-right:8px}.player.laya{--accent:#b94725;padding-left:8px;border-left:1px solid #bcb8ac}
+    .player-heading{height:42px;padding:0;display:flex;justify-content:space-between;align-items:center;gap:10px;border-bottom:2px solid var(--accent);background:#f3f0e8;flex-shrink:0}
+    .identity{min-width:0;display:flex;align-items:baseline;gap:10px}.identity h2{font-size:22px;line-height:1;font-weight:600;letter-spacing:-.5px;margin:0;color:var(--accent)}
+    .identity h2 a{color:inherit;text-decoration:none}.identity h2 a:hover{text-decoration:underline;text-underline-offset:3px}
+    .identity .account{margin:0;font-size:11px;color:#687069;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .account-label{display:none}.player-meta{flex-shrink:0}
     .status{font-size:11px;color:#5b625e;white-space:nowrap}
     .status[data-state="running"],.status[data-state="ready"]{color:var(--accent);font-weight:700}.status[data-state="error"]{color:#a23520}
-    .open-view{font-size:11px;color:#4d585d;text-decoration:underline;text-underline-offset:3px;text-decoration-color:#b6b9b1}.open-view:hover{color:var(--accent);text-decoration-color:currentColor}.open-view span{margin-left:4px}
     .player-error{margin:0;background:#fae7dc;color:#8e301a;font-size:12px;padding:10px 14px;overflow-wrap:anywhere}.player-error:empty{display:none}
     iframe{display:block;border:0;width:100%;flex:1;min-height:0;background:#fffdf8}
-    @media(min-width:1800px){.players{max-width:2400px;margin:auto}.identity h2{font-size:42px}}
-    @media(max-width:1050px){.player{height:calc(100dvh - 90px)}.players{padding:0 18px 14px}.player.jev{margin-right:12px}.player.laya{padding-left:12px}.match-bar,#message{margin-inline:18px}}
-    @media(max-width:680px){.match-bar{height:auto;min-height:82px;flex-wrap:wrap;padding:14px 0;margin:0 16px;gap:14px}.match-context{font-size:10px}#message{margin:10px 16px}.players{grid-template-columns:1fr;padding:0 16px 16px;gap:24px}.player{height:840px;min-height:0}.player.jev{margin-right:0}.player.laya{padding-left:0;border-left:0}.controls button{padding:8px 12px}.identity h2{font-size:36px}}
+    @media(max-width:680px){.match-bar{margin:0 10px}.players{grid-template-columns:1fr;padding:0 10px 8px;gap:16px}.player{height:calc(100dvh - 50px);min-height:480px}.player.jev{margin-right:0}.player.laya{padding-left:0;border-left:0}.identity h2{font-size:22px}#message{margin-inline:10px}}
   </style>
 </head>
 <body>
   <header class="match-bar">
-    <div><h1>Jev <span class="versus">vs</span> Laya</h1><p class="match-context">Clash Royale · Head-to-head</p></div>
+    <h1>Jev <span class="versus">vs</span> Laya</h1>
     <div class="controls" aria-label="Both agents"><button id="start" disabled>Start both</button><button id="stop" disabled>Stop both</button></div>
   </header>
   <p id="message" role="alert" hidden></p>
   <main class="players">
     <section class="player jev" aria-labelledby="jev-name">
       <header class="player-heading">
-        <div class="identity"><h2 id="jev-name">Jev</h2><p>Typesafe · API</p><p class="account"><span id="jev-account-label" class="account-label">Account</span> <span id="jev-account">Not labeled</span></p></div>
-        <div class="player-meta"><span id="jev-status" class="status" role="status">Connecting</span><a class="open-view" href="http://127.0.0.1:{{JEV_PORT}}/" target="_blank" rel="noopener" aria-label="Open Jev's individual dashboard">Open view <span aria-hidden="true">↗</span></a></div>
+        <div class="identity"><h2 id="jev-name"><a href="http://127.0.0.1:{{JEV_PORT}}/" target="_blank" rel="noopener" title="Jev · Typesafe API · Open individual dashboard">Jev</a></h2><p class="account"><span id="jev-account-label" class="account-label">Account</span> <span id="jev-account">Not labeled</span></p></div>
+        <div class="player-meta"><span id="jev-status" class="status" role="status">Connecting</span></div>
       </header>
       <p id="jev-error" class="player-error" role="status"></p>
       <iframe title="Jev gameplay and decisions" src="http://127.0.0.1:{{JEV_PORT}}/?view=duel"></iframe>
     </section>
     <section class="player laya" aria-labelledby="laya-name">
       <header class="player-heading">
-        <div class="identity"><h2 id="laya-name">Laya</h2><p>Convai Innovations · Local</p><p class="account"><span id="laya-account-label" class="account-label">Account</span> <span id="laya-account">Not labeled</span></p></div>
-        <div class="player-meta"><span id="laya-status" class="status" role="status">Connecting</span><a class="open-view" href="http://127.0.0.1:{{LAYA_PORT}}/" target="_blank" rel="noopener" aria-label="Open Laya's individual dashboard">Open view <span aria-hidden="true">↗</span></a></div>
+        <div class="identity"><h2 id="laya-name"><a href="http://127.0.0.1:{{LAYA_PORT}}/" target="_blank" rel="noopener" title="Laya · local model · Open individual dashboard">Laya</a></h2><p class="account"><span id="laya-account-label" class="account-label">Account</span> <span id="laya-account">Not labeled</span></p></div>
+        <div class="player-meta"><span id="laya-status" class="status" role="status">Connecting</span></div>
       </header>
       <p id="laya-error" class="player-error" role="status"></p>
       <iframe title="Laya gameplay and decisions" src="http://127.0.0.1:{{LAYA_PORT}}/?view=duel"></iframe>

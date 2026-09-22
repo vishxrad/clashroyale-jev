@@ -8,6 +8,7 @@ import {pretty, title, clock, eventTime, captureTime, indexAt, observationIndexA
 const $ = id => document.getElementById(id);
 const duelView = new URLSearchParams(location.search).get('view') === 'duel';
 document.body.classList.toggle('duel-embedded', duelView);
+if (duelView) setupDuelTools();
 const canvas = $('arena'), ctx = canvas.getContext('2d'), video = $('game-video');
 let config, events = [], controls = [], log = [], current = null, bitmap = null, mode, runMode;
 let playing = false, start = null, paintVersion = 0, renderVersion = 0;
@@ -27,6 +28,34 @@ async function post(path, body) {
 }
 function text(id, value) { const el = $(id), next = String(value); if (el.textContent !== next) el.textContent = next; }
 const policyName = () => config?.runtime?.decision_provider === 'laya' ? 'Laya' : 'Jev';
+function setupDuelTools() {
+  // Keep the whole frame available for gameplay; details open over it on demand.
+  const tools = document.createElement('div');
+  tools.className = 'duel-tools';
+  const decisions = document.createElement('details'), settings = document.createElement('details');
+  decisions.className = 'duel-decisions'; settings.className = 'duel-settings';
+  const decisionSummary = document.createElement('summary');
+  decisionSummary.append(element('span', 'Decisions'));
+  const move = element('span', '', 'duel-last-move'); move.id = 'duel-last-move';
+  decisionSummary.append(move);
+  decisions.append(decisionSummary, $('viewer'));
+  const viewSummary = element('summary', 'View');
+  viewSummary.setAttribute('aria-label', 'View controls');
+  const viewControls = document.createElement('div');
+  viewControls.className = 'duel-view-controls';
+  viewControls.append($('overlay-controls'), $('live-controls'), $('arena-legend'));
+  settings.append(viewSummary, viewControls);
+  tools.append(decisions, settings);
+  document.querySelector('main').append(tools);
+  for (const drawer of [decisions, settings]) {
+    drawer.addEventListener('toggle', () => {
+      if (drawer.open) (drawer === decisions ? settings : decisions).open = false;
+    });
+    drawer.addEventListener('keydown', event => {
+      if (event.key === 'Escape') { drawer.open = false; drawer.querySelector('summary').focus(); }
+    });
+  }
+}
 function labelPolicy() {
   const name = policyName();
   document.title = `${name} plays Clash Royale`;
@@ -205,6 +234,11 @@ function renderScores(id, values, selected, frame, cardMode = false) {
 function renderDecision(frame) {
   const decision = frame?.decision, action = frame?.action;
   const available = Boolean(decision && decision.source !== 'controller');
+  if (duelView) {
+    const move = available ? action?.card ? `${title(action.card)} → ${placement(action)}` : 'Wait & observe' : '';
+    text('duel-last-move', move);
+    $('duel-last-move').title = move;
+  }
   $('decision-empty').hidden = available; $('decision-content').hidden = !available;
   if (!available) {
     text('decision-empty', frame?.status?.includes('error') ? `Decision unavailable · ${pretty(frame.status)}` : `Waiting for ${policyName()}’s next decision.`);
