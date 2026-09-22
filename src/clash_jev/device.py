@@ -82,7 +82,9 @@ class ADB:
         except BaseException:
             if proc.returncode is None:
                 proc.kill()
-            await proc.wait()
+            # A cancelled screenshot can leave unread pixels in stdout. Drain
+            # both pipes after killing ADB so process cleanup cannot stall.
+            await proc.communicate()
             raise
         if proc.returncode:
             raise RuntimeError(f"ADB failed: {stderr.decode(errors='replace')[:300]}")
