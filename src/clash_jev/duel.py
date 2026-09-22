@@ -1,7 +1,7 @@
 """Host a friendly-match dashboard for two independently controlled emulators.
 
 Bind Jev and Laya to explicit, distinct ADB serials and retain separate recordings.
-Share decision formatting and runtime settings while preserving each screen's
+Share gameplay settings while preserving Jev's full prompt and each screen's
 calibration. Players enter the friendly battle manually after starting both bots.
 """
 
@@ -24,7 +24,7 @@ from .webui import STATIC, make_server
 
 
 def match_configs(jev_path: Path, laya_path: Path, max_calls: int) -> tuple[Config, Config]:
-    """Use the same deck and decision settings with separate device calibration."""
+    """Share gameplay settings while keeping each provider's supported input format."""
     jev, laya = Config.load(jev_path), Config.load(laya_path)
     decks = [[card.model_dump(exclude={"templates"}) for card in cfg.deck] for cfg in (jev, laya)]
     if decks[0] != decks[1]:
@@ -36,7 +36,10 @@ def match_configs(jev_path: Path, laya_path: Path, max_calls: int) -> tuple[Conf
     laya.runtime.laya_model, laya.runtime.laya_device = model, device
     for cfg, provider in ((jev, "jev"), (laya, "laya")):
         cfg.runtime.decision_provider = provider
-        cfg.runtime.staged_decisions = cfg.runtime.compact_decisions = True
+        cfg.runtime.staged_decisions = True
+        # Jev keeps its original tactical instructions and full state. Only
+        # Laya needs the reduced input for its small encoder context.
+        cfg.runtime.compact_decisions = provider == "laya"
         cfg.runtime.min_decision_confidence = 0.0
         cfg.runtime.max_api_calls = max_calls
     return jev, laya
@@ -80,7 +83,14 @@ class Duel:
                     player.start()
                 destination = self.root / "runs" / f"duel-{time.time_ns()}.json"
                 destination.parent.mkdir(parents=True, exist_ok=True)
-                atomic_json(destination, {"players": self.status(), "format": "compact-staged-v1"})
+                atomic_json(
+                    destination,
+                    {
+                        "players": self.status(),
+                        "format": "staged-v2",
+                        "decision_inputs": {"jev": "full", "laya": "compact"},
+                    },
+                )
             except Exception:
                 for player in self.players.values():
                     player.stop()
