@@ -91,8 +91,8 @@ class Duel:
                     destination,
                     {
                         "players": self.status(),
-                        "format": "staged-v2",
-                        "decision_inputs": {"jev": "full", "laya": "compact"},
+                        "format": "staged-v3",
+                        "decision_inputs": {"jev": "full", "laya": "compact-tactics-v2"},
                     },
                 )
             except Exception:

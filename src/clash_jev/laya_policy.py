@@ -13,7 +13,7 @@ import time
 from functools import lru_cache
 
 from .decision_input import compact_question
-from .models import Decision
+from .models import WAIT, Action, Decision
 from .providers import ChoicePolicy, ProviderFailure
 
 
@@ -30,6 +30,12 @@ def load_laya(model: str, device: str):
 
 class LayaPolicy(ChoicePolicy):
     """Adapt local typed answers to the controller's existing Decision model."""
+
+    def placement_choices(self, actions: list[Action]) -> list[Action]:
+        """Let Laya reconsider a spell when its available targets are unhelpful."""
+        if actions and self.gateway.config.cards[actions[0].card].kind == "spell":
+            return [*actions[:11], WAIT]
+        return super().placement_choices(actions)
 
     async def prepare(self):
         opts = self.gateway.config.runtime

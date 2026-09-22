@@ -268,6 +268,10 @@ class ChoicePolicy:
     async def prepare(self):
         """Prepare provider resources before capturing a decision frame."""
 
+    def placement_choices(self, actions: list[Action]) -> list[Action]:
+        """Fit placement choices to the provider's supported input format."""
+        return actions[:12] if self.gateway.config.runtime.compact_decisions else actions
+
     async def decide(self, state: State, actions: list[Action]) -> Decision:
         if not self.gateway.config.runtime.staged_decisions:
             return await self.choose(state, actions, DECISION_PROMPT)
@@ -300,8 +304,7 @@ class ChoicePolicy:
             card_decision.card_confidence = card_decision.confidence
             return card_decision
         positions = [a for a in actions if a.card == selected.card]
-        if self.gateway.config.runtime.compact_decisions:
-            positions = positions[:12]
+        positions = self.placement_choices(positions)
         decision = await self.choose(
             state,
             positions,
