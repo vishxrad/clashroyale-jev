@@ -48,8 +48,11 @@ def match_configs(jev_path: Path, laya_path: Path, max_calls: int) -> tuple[Conf
 class Duel:
     """Coordinate shared controls while keeping both bots' device state isolated."""
 
-    def __init__(self, players: dict[str, LiveDemo], root: Path):
+    def __init__(
+        self, players: dict[str, LiveDemo], root: Path, accounts: dict[str, str] | None = None
+    ):
         self.players, self.root = players, root
+        self.accounts = accounts or {}
         self.lock = threading.Lock()
 
     def status(self):
@@ -62,6 +65,7 @@ class Duel:
                     "stopping": player.stopping,
                     "connected": player.stream.status()["connected"],
                     "serial": player.device.serial,
+                    "account": self.accounts.get(name, ""),
                     "error": player.error,
                     "stop_reason": summary.get("stop_reason"),
                     "run": str(player.run) if player.run else None,
@@ -182,7 +186,8 @@ def serve_duel(args):
         ports = {"jev": args.port + 1, "laya": args.port + 2}
         for name, player in players.items():
             servers.append(make_server(port=ports[name], live=player, root=args.root))
-        server = match_server(Duel(players, args.root), args.port, ports)
+        accounts = {"jev": args.jev_account, "laya": args.laya_account}
+        server = match_server(Duel(players, args.root, accounts), args.port, ports)
         servers.append(server)
         for child in servers[:-1]:
             thread = threading.Thread(target=child.serve_forever, daemon=True)

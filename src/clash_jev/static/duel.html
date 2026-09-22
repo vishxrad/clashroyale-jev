@@ -1,51 +1,110 @@
 <!doctype html>
-<!-- Shared controls and side-by-side dashboards for two independent bot sessions. -->
+<!-- Match overview with explicit agent identities and independent gameplay/decision views. -->
 <html lang="en">
 <head>
   <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
   <title>Jev vs Laya</title>
   <style>
-    :root{color-scheme:dark;font:14px/1.5 system-ui,sans-serif;background:#171719;color:#ececeb}
-    *{box-sizing:border-box}body{margin:0}header{display:flex;align-items:center;gap:12px;padding:14px 20px;border-bottom:1px solid #303034}
-    h1{font-size:18px;margin:0;margin-right:auto}button{font:inherit;padding:7px 14px;border:1px solid #424247;border-radius:6px;background:#24272a;color:inherit;cursor:pointer}
-    button:disabled{opacity:.45;cursor:default}#start{background:#243b2c}#message{margin:8px 20px;color:#aeb3b0;min-height:22px}
-    main{display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:0 12px 12px}section{min-width:0;border:1px solid #303034;border-radius:8px;overflow:hidden}
-    .player{display:flex;gap:12px;align-items:center;padding:10px 14px;background:#1c1c1f}.status{margin-left:auto;font-size:12px;color:#aeb3b0}
-    a{color:inherit}iframe{display:block;border:0;width:100%;height:calc(100vh - 160px);min-height:500px;background:#171719}
-    @media(max-width:800px){main{grid-template-columns:1fr}header{flex-wrap:wrap}iframe{height:85vh}}
+    :root{color-scheme:dark;font:14px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:#111214;color:#eeeff2}
+    *{box-sizing:border-box}body{margin:0}button,a{-webkit-tap-highlight-color:transparent}button{font:inherit;cursor:pointer}
+    button:disabled{opacity:.35;cursor:default}button:focus-visible,a:focus-visible{outline:2px solid #eee;outline-offset:4px}
+    .match-bar{height:76px;padding:0 24px;display:flex;align-items:center;justify-content:space-between;gap:20px}
+    h1{font-size:20px;line-height:1.2;letter-spacing:-.5px;font-weight:650;margin:0}.versus{font-weight:400;color:#7f838c;margin:0 5px}
+    .match-context{font-size:11px;color:#8e929c;margin:5px 0 0}.controls{display:flex;gap:8px;flex-shrink:0}
+    .controls button{border:1px solid #373a42;border-radius:7px;background:transparent;color:#c3c6ce;padding:9px 15px;font-size:12px;font-weight:550}
+    .controls #start{background:#eceef2;color:#17191e;border-color:#eceef2}.controls button:hover:not(:disabled){filter:brightness(.88)}
+    .match-note{margin:0 24px 14px;display:flex;align-items:center;justify-content:space-between;gap:16px;font-size:11px;color:#9599a2;min-height:17px}
+    #message{margin:0}#message[data-error="true"]{color:#ffadad}.perspective{color:#777d87;text-align:right}
+    .players{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;padding:0 20px 20px}
+    .player{--accent:#a5e7bb;--tint:#1b2822;min-width:0;background:#191b1f;border:1px solid #30343a;border-top:3px solid var(--accent);border-radius:10px;overflow:hidden;display:flex;flex-direction:column;height:calc(100dvh - 127px);min-height:600px}
+    .player.laya{--accent:#c3b1ff;--tint:#262234}
+    .player-heading{padding:17px 19px 15px;display:flex;justify-content:space-between;align-items:center;gap:14px;border-bottom:1px solid #30343a;background:var(--tint)}
+    .identity{min-width:0}.identity h2{font-size:29px;letter-spacing:-.9px;line-height:1.1;margin:0 0 5px;color:var(--accent);font-weight:650}
+    .identity p{margin:0;color:#999fa9;font-size:11px}.identity .account{margin-top:9px;font-size:12px;color:#e2e4e9;overflow-wrap:anywhere}
+    .account-label{color:#969ca6;margin-right:4px}.player-meta{display:flex;flex-direction:column;align-items:flex-end;gap:12px;flex-shrink:0}
+    .status{font-size:10px;font-weight:550;color:#c5c8cf;background:#11131788;border:1px solid #ffffff13;border-radius:20px;padding:4px 9px;white-space:nowrap}
+    .status:before{content:"";display:inline-block;width:5px;height:5px;border-radius:50%;background:#808692;margin-right:6px;vertical-align:1px}
+    .status[data-state="running"]{color:var(--accent)}.status[data-state="running"]:before,.status[data-state="ready"]:before{background:var(--accent)}
+    .status[data-state="error"]{color:#ffadad}.status[data-state="error"]:before{background:#ffadad}
+    .open-view{font-size:10px;color:#b4b9c2;text-decoration:none}.open-view:hover{color:#fff}.open-view span{margin-left:4px}
+    .player-error{margin:0;background:#341f24;color:#ffb8b8;font-size:11px;padding:8px 18px;overflow-wrap:anywhere}.player-error:empty{display:none}
+    iframe{display:block;border:0;width:100%;flex:1;min-height:0;background:#17191d}
+    @media(min-width:1800px){.players{max-width:2400px;margin:auto}.identity h2{font-size:32px}}
+    @media(max-width:1050px){.match-note{display:block}.perspective{display:block;text-align:left;margin-top:3px}.player{height:calc(100dvh - 147px)}.players{gap:12px;padding:0 14px 14px}.player-heading{padding:15px}.match-bar{padding:0 18px}.match-note{margin-inline:18px}}
+    @media(max-width:680px){.match-bar{height:auto;min-height:82px;flex-wrap:wrap;padding:16px;gap:14px}.match-context{font-size:10px}.match-note{margin:0 16px 14px}.players{grid-template-columns:1fr;padding:0 10px 12px;gap:16px}.player{height:840px;min-height:0}.controls button{padding:8px 11px}.identity h2{font-size:28px}.perspective{max-width:340px}}
   </style>
 </head>
 <body>
-  <header><h1>Jev vs Laya</h1><button id="start" disabled>Start both</button><button id="stop">Stop both</button></header>
-  <p id="message">Connect both emulators, start the bots, then enter a friendly battle.</p>
-  <main>
-    <section><div class="player"><a href="http://127.0.0.1:{{JEV_PORT}}/" target="_blank" rel="noopener">Jev</a><span id="jev-status" class="status">Connecting</span></div><iframe title="Jev gameplay and decisions" src="http://127.0.0.1:{{JEV_PORT}}/"></iframe></section>
-    <section><div class="player"><a href="http://127.0.0.1:{{LAYA_PORT}}/" target="_blank" rel="noopener">Laya</a><span id="laya-status" class="status">Connecting</span></div><iframe title="Laya gameplay and decisions" src="http://127.0.0.1:{{LAYA_PORT}}/"></iframe></section>
+  <header class="match-bar">
+    <div><h1>Jev <span class="versus">vs</span> Laya</h1><p class="match-context">Clash Royale · Head-to-head</p></div>
+    <div class="controls" aria-label="Both agents"><button id="start" disabled>Start both</button><button id="stop" disabled>Stop both</button></div>
+  </header>
+  <div class="match-note"><p id="message" role="status">Connecting to both emulators…</p><span class="perspective">Each agent plays from the bottom of its own screen.</span></div>
+  <main class="players">
+    <section class="player jev" aria-labelledby="jev-name">
+      <header class="player-heading">
+        <div class="identity"><h2 id="jev-name">Jev</h2><p>Typesafe · API</p><p class="account"><span id="jev-account-label" class="account-label">Account</span> <span id="jev-account">Not labeled</span></p></div>
+        <div class="player-meta"><span id="jev-status" class="status" role="status">Connecting</span><a class="open-view" href="http://127.0.0.1:{{JEV_PORT}}/" target="_blank" rel="noopener" aria-label="Open Jev's individual dashboard">Open view <span aria-hidden="true">↗</span></a></div>
+      </header>
+      <p id="jev-error" class="player-error" role="status"></p>
+      <iframe title="Jev gameplay and decisions" src="http://127.0.0.1:{{JEV_PORT}}/?view=duel"></iframe>
+    </section>
+    <section class="player laya" aria-labelledby="laya-name">
+      <header class="player-heading">
+        <div class="identity"><h2 id="laya-name">Laya</h2><p>Convai Innovations · Local</p><p class="account"><span id="laya-account-label" class="account-label">Account</span> <span id="laya-account">Not labeled</span></p></div>
+        <div class="player-meta"><span id="laya-status" class="status" role="status">Connecting</span><a class="open-view" href="http://127.0.0.1:{{LAYA_PORT}}/" target="_blank" rel="noopener" aria-label="Open Laya's individual dashboard">Open view <span aria-hidden="true">↗</span></a></div>
+      </header>
+      <p id="laya-error" class="player-error" role="status"></p>
+      <iframe title="Laya gameplay and decisions" src="http://127.0.0.1:{{LAYA_PORT}}/?view=duel"></iframe>
+    </section>
   </main>
   <script>
-    // Poll controller state independently of each child's buffered gameplay video.
-    const start = document.getElementById('start'), message = document.getElementById('message');
-    let busy = false;
+    // Controller status is immediate; each child's video keeps its own display buffer.
+    const start = document.getElementById('start'), stop = document.getElementById('stop');
+    const message = document.getElementById('message');
+    const names = ['jev', 'laya'];
+    let busy = false, controlError = '';
+    const stopReasons = {battle_finished:'Battle finished', time_limit:'Time limit reached', api_budget:'Request limit reached', user_stop:'Stopped', stopped:'Stopped'};
+    function setText(node, value) { if (node.textContent !== value) node.textContent = value; }
     function show(data) {
-      for (const name of ['jev', 'laya']) {
-        const p = data[name];
-        document.getElementById(`${name}-status`).textContent = p.error || (p.stopping ? 'Stopping' : p.running ? 'Running' : p.stop_reason || (p.connected ? 'Ready' : 'Waiting for emulator'));
+      const players = names.map(name => data[name]);
+      for (const name of names) {
+        const p = data[name], status = document.getElementById(`${name}-status`);
+        const state = p.error ? 'error' : p.stopping ? 'stopping' : !p.connected ? 'connecting' : p.running ? 'running' : 'ready';
+        const label = {error:'Needs attention', stopping:'Stopping', connecting:'No video feed', running:'Running', ready:p.stop_reason ? 'Stopped' : 'Ready'}[state];
+        setText(status, label); status.dataset.state = state;
+        status.title = state === 'ready' && p.stop_reason ? stopReasons[p.stop_reason] || p.stop_reason.replaceAll('_', ' ') : label;
+        setText(document.getElementById(`${name}-account-label`), p.account ? 'Playing as' : 'Account');
+        setText(document.getElementById(`${name}-account`), p.account || 'Not labeled');
+        setText(document.getElementById(`${name}-error`), p.error || '');
       }
-      start.disabled = busy || Object.values(data).some(p => !p.connected || p.running || p.stopping);
+      start.disabled = busy || players.some(p => !p.connected || p.running || p.stopping);
+      stop.disabled = busy || !players.some(p => p.running && !p.stopping);
+      const stateMessage = players.some(p => p.stopping) ? 'Stopping agents. Game feeds stay connected.'
+        : players.some(p => !p.connected) ? 'Waiting for both emulator feeds to connect.'
+        : players.every(p => p.running) ? 'Both agents are running. Enter a friendly battle in Clash Royale.'
+        : players.some(p => p.running) ? 'One agent is running. Stop both before starting a new match.'
+        : 'Ready when you are. Start both, then enter a friendly battle.';
+      setText(message, controlError || (players.some(p => p.error) ? 'An agent needs attention. See its panel below.' : stateMessage));
+      message.dataset.error = String(Boolean(controlError));
     }
     async function poll() {
       try { const r = await fetch('/api/duel'); if (!r.ok) throw Error('Dashboard unavailable'); show(await r.json()); }
-      catch (e) { start.disabled = true; message.textContent = e.message; }
+      catch (e) {
+        start.disabled = stop.disabled = true;
+        setText(message, 'Dashboard reconnecting. Agent status is unavailable.');
+        for (const name of names) { const status = document.getElementById(`${name}-status`); setText(status, 'Reconnecting'); status.dataset.state = 'connecting'; }
+      }
       setTimeout(poll, 1000);
     }
     for (const action of ['start', 'stop']) document.getElementById(action).onclick = async () => {
-      busy = true; start.disabled = true;
+      busy = true; controlError = ''; start.disabled = stop.disabled = true;
+      setText(message, action === 'start' ? 'Starting both agents…' : 'Stopping both agents…');
       try {
         const r = await fetch(`/api/duel/${action}`, {method:'POST'}), data = await r.json();
         if (!r.ok) throw Error(data.error || 'Control request failed');
-        message.textContent = action === 'start' ? 'Both bots started. Enter the friendly battle in Clash Royale.' : 'Both bots are stopping. Gameplay feeds stay visible.';
-        show(data);
-      } catch (e) { message.textContent = e.message; }
+        busy = false; show(data);
+      } catch (e) { controlError = e.message; setText(message, controlError); message.dataset.error = 'true'; }
       finally { busy = false; }
     };
     poll();

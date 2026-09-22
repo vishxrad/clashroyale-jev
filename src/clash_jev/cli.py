@@ -40,6 +40,8 @@ def parser() -> argparse.ArgumentParser:
     duel.add_argument("--laya-config", type=Path, required=True)
     duel.add_argument("--jev-serial", required=True)
     duel.add_argument("--laya-serial", required=True)
+    duel.add_argument("--jev-account", default="", help="Display name of Jev's game account")
+    duel.add_argument("--laya-account", default="", help="Display name of Laya's game account")
     duel.add_argument("--adb")
     duel.add_argument("--env", type=Path, default=Path(".env"))
     duel.add_argument("--port", type=int, default=8780)

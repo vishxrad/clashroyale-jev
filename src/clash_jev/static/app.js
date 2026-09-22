@@ -6,6 +6,8 @@
  */
 import {pretty, title, clock, eventTime, captureTime, indexAt, observationIndexAt, placement, deriveLog, visibleLog, unitLabelVisible} from './replay-state.js';
 const $ = id => document.getElementById(id);
+const duelView = new URLSearchParams(location.search).get('view') === 'duel';
+document.body.classList.toggle('duel-embedded', duelView);
 const canvas = $('arena'), ctx = canvas.getContext('2d'), video = $('game-video');
 let config, events = [], controls = [], log = [], current = null, bitmap = null, mode, runMode;
 let playing = false, start = null, paintVersion = 0, renderVersion = 0;
@@ -30,6 +32,12 @@ function labelPolicy() {
   document.title = `${name} plays Clash Royale`;
   $('viewer').setAttribute('aria-label', `${name} decisions`);
   text('action-legend', `${name} action`);
+  if (duelView) {
+    document.body.dataset.provider = name.toLowerCase();
+    text('canvas-title', `${name}'s view`);
+    document.querySelector('#viewer h2').textContent = `${name}'s decisions`;
+    $('live-screen').alt = `${name}'s emulator gameplay, playing from the bottom of the arena`;
+  }
 }
 function element(tag, value, cls) { const el = document.createElement(tag); el.textContent = value; if (cls) el.className = cls; return el; }
 function toast(message) { text('toast', message); $('toast').hidden = false; clearTimeout(toast.timeout); toast.timeout = setTimeout(() => $('toast').hidden = true, 2500); }
@@ -448,6 +456,7 @@ async function main() {
     $('live-screen').hidden = false;
     text('empty-message', 'Buffering 5 seconds of gameplay…');
     const data = await get('/api/live'); config = data.manifest.config;
+    labelPolicy();
     const size = config.layout.reference_size ?? [1440, 2560];
     canvas.width = size[0]; canvas.height = size[1]; fitStage();
     await pollLive(); streamLiveVideo(); requestAnimationFrame(tick);
