@@ -114,7 +114,7 @@ Open **http://127.0.0.1:8767/**, click **Start Jev**, and enter a battle manuall
 
 The **5-second display buffer** gives Qwen and Jev time to process a screenshot before its video frame reaches the viewer. Without it, labels from an older observation can appear over gameplay where troops have already moved. The browser delays the video and aligns observations with their source frames, while decisions follow their recorded action times. Five seconds provides headroom over the measured 3.39-second median processing cycle. It does not add a five-second wait to bot input or speed up inference. Choose **Live** to remove the display buffer.
 
-Model capture and the video feed run independently; old queued frames are skipped. The native stream uses the calibrated reference resolution, verified at 1440×2560 in the original setup.
+The browser demo samples fresh frames from the existing device video feed for model input, avoiding a second screenshot loop on each emulator. Model processing and video playback run independently; the bot never reads from the five-second display buffer. Old queued frames are skipped, and background browser tabs pause video requests. The native stream uses the calibrated reference resolution, verified at 1080×1920 in the duel setup. Standalone `run` sessions still capture through ADB and retry temporary capture timeouts twice before stopping. Device timeouts are reported separately from the overall run time limit.
 
 For terminal-only operation:
 

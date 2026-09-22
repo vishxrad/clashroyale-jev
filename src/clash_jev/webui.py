@@ -38,6 +38,11 @@ def make_server(
     screenshot = Image.open(image).convert("RGB") if image else None
 
     class Handler(BaseHTTPRequestHandler):
+        # Reuse the connection for JPEG frames instead of opening one per frame.
+        protocol_version = "HTTP/1.1"
+        disable_nagle_algorithm = True
+        timeout = 10
+
         def log_message(self, *args):
             pass
 
@@ -47,8 +52,13 @@ def make_server(
             self.send_header("Content-Length", str(len(content)))
             self.send_header("Cache-Control", "no-store")
             self.send_header("X-Content-Type-Options", "nosniff")
+            if self.close_connection:
+                self.send_header("Connection", "close")
             self.end_headers()
-            self.wfile.write(content)
+            try:
+                self.wfile.write(content)
+            except (BrokenPipeError, ConnectionResetError):
+                pass
 
         def json(self, value, status=200):
             self.respond(json.dumps(value).encode(), "application/json", status)
@@ -126,9 +136,11 @@ def make_server(
                     pass
                 return
             if live and path == "/live.mjpg":
+                self.close_connection = True
                 self.send_response(200)
                 self.send_header("Content-Type", "multipart/x-mixed-replace; boundary=frame")
                 self.send_header("Cache-Control", "no-store")
+                self.send_header("Connection", "close")
                 self.end_headers()
                 after = -1
                 try:
@@ -206,6 +218,9 @@ def make_server(
 
         def do_POST(self):
             nonlocal config
+            # Control routes need no request body; don't reuse a socket with
+            # unread bytes after accepting or rejecting one of these requests.
+            self.close_connection = True
             # Writes are limited to calibration or explicitly enabled live controls.
             origin = self.headers.get("Origin")
             expected = f"http://127.0.0.1:{self.server.server_port}"

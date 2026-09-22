@@ -15,7 +15,7 @@ from pathlib import Path
 from .actions import candidates
 from .config import Config
 from .control import Controller
-from .device import ADB, Frame, LatestFrames
+from .device import ADB, Frame, FrameSource, LatestFrames
 from .hud import HUDReader
 from .models import WAIT, Battlefield, Decision
 from .providers import BudgetExhausted, CerebrasVision, Gateway, ProviderFailure, make_policy
@@ -107,6 +107,7 @@ async def run_live(
     *,
     execute: bool,
     seconds: float,
+    frame_source: FrameSource | None = None,
 ):
     if not config.layout.calibrated:
         raise ValueError("Calibrate the screen before live observation or execution")
@@ -119,13 +120,14 @@ async def run_live(
     recorder = Recorder(output, config, "live" if execute else "live-dry-run")
     controller = Controller(config, device, reader, execute=execute)
     pipeline = Pipeline(config, reader, CerebrasVision(gateway), policy, controller, recorder)
-    frames = LatestFrames(device, config.runtime.capture_hz)
+    frames = LatestFrames(frame_source or device, config.runtime.capture_hz)
     capture = asyncio.create_task(frames.produce())
     after, errors = -1, 0
     seen_battle, inactive_since = False, None
     stop_reason = "finished"
+    deadline = asyncio.timeout(seconds)
     try:
-        async with asyncio.timeout(seconds):
+        async with deadline:
             while not controller.halted:
                 frame = await frames.next(after)
                 after = frame.id
@@ -181,10 +183,15 @@ async def run_live(
                         await asyncio.sleep(0.5)
         if controller.halted:
             stop_reason = "halted: " + controller.halted
-    except (TimeoutError, BudgetExhausted) as exc:
-        timed_out = isinstance(exc, TimeoutError)
-        stop_reason = "time_limit" if timed_out else "request_budget"
-        print("Run time limit reached" if timed_out else str(exc))
+    except TimeoutError:
+        if not deadline.expired():
+            stop_reason = "error: operation_timeout"
+            raise RuntimeError("A pipeline operation timed out before the run deadline") from None
+        stop_reason = "time_limit"
+        print("Run time limit reached")
+    except BudgetExhausted as exc:
+        stop_reason = "request_budget"
+        print(str(exc))
     except asyncio.CancelledError:
         stop_reason = "interrupted"
         raise

@@ -395,6 +395,10 @@ function updateLiveTimeline() {
 async function streamLiveVideo() {
   // One request and decode at a time. Slow viewers skip frames instead of building a queue.
   while (isLive) {
+    if (document.hidden) {
+      await new Promise(resolve => document.addEventListener('visibilitychange', resolve, {once: true}));
+      continue;
+    }
     const delay = displayDelay;
     let url = null;
     try {
@@ -426,6 +430,7 @@ $('display-delay').onchange = () => {
   $('empty').hidden = false;
 };
 async function pollLive() {
+  if (document.hidden) { setTimeout(pollLive, 1000); return; }
   try { await refreshLive(); }
   catch (error) { text('live-status', `Connection lost · ${error.message}`); $('start-bot').disabled = true; }
   setTimeout(pollLive, 250);

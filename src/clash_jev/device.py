@@ -14,6 +14,7 @@ import struct
 import time
 from dataclasses import dataclass
 from pathlib import Path
+from typing import Protocol
 
 from PIL import Image
 
@@ -23,6 +24,16 @@ class Frame:
     id: int
     captured_at: float
     image: Image.Image
+
+
+class FrameSource(Protocol):
+    """Supply a fresh timestamped image independently of the input device."""
+
+    async def capture(self) -> Frame: ...
+
+
+class DeviceTimeout(RuntimeError):
+    """A device operation stalled, independently of the overall run deadline."""
 
 
 def decode_screencap(data: bytes) -> Image.Image:
@@ -79,6 +90,12 @@ class ADB:
         )
         try:
             stdout, stderr = await asyncio.wait_for(proc.communicate(), timeout=8)
+        except TimeoutError:
+            if proc.returncode is None:
+                proc.kill()
+            await proc.communicate()
+            operation = " ".join(args[:2])
+            raise DeviceTimeout(f"ADB {operation} timed out after 8 seconds") from None
         except BaseException:
             if proc.returncode is None:
                 proc.kill()
@@ -130,7 +147,7 @@ class ADB:
 class LatestFrames:
     """One capture producer, one inference consumer; replaced frames never queue."""
 
-    def __init__(self, source: ADB, hz: float):
+    def __init__(self, source: FrameSource, hz: float):
         self.source, self.hz = source, hz
         self.latest: Frame | None = None
         self.error: Exception | None = None
@@ -139,10 +156,19 @@ class LatestFrames:
         self.consumed_id = -1
 
     async def produce(self):
+        timeouts = 0
         try:
             while True:
                 started = time.monotonic()
-                frame = await self.source.capture()
+                try:
+                    frame = await self.source.capture()
+                except DeviceTimeout:
+                    timeouts += 1
+                    if timeouts >= 3:
+                        raise
+                    await asyncio.sleep(0.25)
+                    continue
+                timeouts = 0
                 async with self.condition:
                     if self.latest and self.latest.id > self.consumed_id:
                         self.dropped += 1

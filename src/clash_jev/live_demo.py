@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import asyncio
 import hashlib
+import io
 import json
 import shutil
 import subprocess
@@ -18,8 +19,10 @@ import time
 from collections import deque
 from pathlib import Path
 
+from PIL import Image
+
 from .config import Config
-from .device import ADB
+from .device import ADB, DeviceTimeout, Frame
 from .providers import Gateway, keys, require_credentials
 from .runner import run_live
 
@@ -228,6 +231,34 @@ class ScreenStream:
             self.thread.join(timeout=5)
 
 
+class StreamFrames:
+    """Sample the existing full-resolution live feed without another device capture."""
+
+    def __init__(self, stream: ScreenStream):
+        self.stream = stream
+        self.sequence = -1
+        self.frame_id = 0
+
+    def _read(self):
+        until = time.monotonic() + 8
+        while time.monotonic() < until:
+            if self.stream.closed.is_set():
+                raise RuntimeError("The device video stream was closed")
+            sequence, jpeg, captured_at = self.stream.next_frame(self.sequence)
+            if jpeg is None:
+                continue
+            self.sequence = sequence
+            if time.monotonic() - captured_at > 1:
+                continue
+            image = Image.open(io.BytesIO(jpeg)).convert("RGB")
+            self.frame_id += 1
+            return Frame(self.frame_id, captured_at, image)
+        raise DeviceTimeout("Device video produced no fresh frame for 8 seconds")
+
+    async def capture(self) -> Frame:
+        return await asyncio.to_thread(self._read)
+
+
 class LiveDemo:
     def __init__(
         self, config: Config, root: Path, env: Path, device: ADB, *, execute: bool, seconds: float
@@ -280,6 +311,7 @@ class LiveDemo:
                     gateway,
                     execute=self.execute,
                     seconds=self.seconds,
+                    frame_source=StreamFrames(self.stream),
                 )
             finally:
                 await gateway.close()

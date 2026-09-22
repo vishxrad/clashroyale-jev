@@ -19,7 +19,7 @@
     .player{--accent:#174d87;min-width:0;background:#f3f0e8;border:0;overflow:hidden;display:flex;flex-direction:column;height:calc(100dvh - 50px);min-height:420px}
     .player.jev{margin-right:8px}.player.laya{--accent:#b94725;padding-left:8px;border-left:1px solid #bcb8ac}
     .player-heading{height:42px;padding:0;display:flex;justify-content:space-between;align-items:center;gap:10px;border-bottom:2px solid var(--accent);background:#f3f0e8;flex-shrink:0}
-    .identity{min-width:0;display:flex;align-items:baseline;gap:10px}.identity h2{font-size:22px;line-height:1;font-weight:600;letter-spacing:-.5px;margin:0;color:var(--accent)}
+    .identity{min-width:0;display:flex;align-items:baseline;gap:10px}.identity h2{font-size:32px;line-height:1;font-weight:800;letter-spacing:-1px;margin:0;color:var(--accent);text-transform:uppercase}
     .identity h2 a{color:inherit;text-decoration:none}.identity h2 a:hover{text-decoration:underline;text-underline-offset:3px}
     .identity .account{margin:0;font-size:11px;color:#687069;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
     .account-label{display:none}.player-meta{flex-shrink:0}
@@ -27,7 +27,7 @@
     .status[data-state="running"],.status[data-state="ready"]{color:var(--accent);font-weight:700}.status[data-state="error"]{color:#a23520}
     .player-error{margin:0;background:#fae7dc;color:#8e301a;font-size:12px;padding:10px 14px;overflow-wrap:anywhere}.player-error:empty{display:none}
     iframe{display:block;border:0;width:100%;flex:1;min-height:0;background:#fffdf8}
-    @media(max-width:680px){.match-bar{margin:0 10px}.players{grid-template-columns:1fr;padding:0 10px 8px;gap:16px}.player{height:calc(100dvh - 50px);min-height:480px}.player.jev{margin-right:0}.player.laya{padding-left:0;border-left:0}.identity h2{font-size:22px}#message{margin-inline:10px}}
+    @media(max-width:680px){.match-bar{margin:0 10px}.players{grid-template-columns:1fr;padding:0 10px 8px;gap:16px}.player{height:calc(100dvh - 50px);min-height:480px}.player.jev{margin-right:0}.player.laya{padding-left:0;border-left:0}.identity h2{font-size:30px}#message{margin-inline:10px}}
   </style>
 </head>
 <body>
@@ -60,14 +60,15 @@
     const message = document.getElementById('message');
     const names = ['jev', 'laya'];
     let busy = false, controlError = '';
-    const stopReasons = {battle_finished:'Battle finished', time_limit:'Time limit reached', api_budget:'Request limit reached', user_stop:'Stopped', stopped:'Stopped'};
+    const stopReasons = {battle_finished:'Battle finished', time_limit:'Time limit reached', api_budget:'Request limit reached', request_budget:'Request limit reached', interrupted:'Stopped', user_stop:'Stopped', stopped:'Stopped'};
     function setText(node, value) { if (node.textContent !== value) node.textContent = value; }
     function show(data) {
       const players = names.map(name => data[name]);
       for (const name of names) {
         const p = data[name], status = document.getElementById(`${name}-status`);
         const state = p.error ? 'error' : p.stopping ? 'stopping' : !p.connected ? 'connecting' : p.running ? 'running' : 'ready';
-        const label = {error:'Needs attention', stopping:'Stopping', connecting:'No video feed', running:'Running', ready:p.stop_reason ? 'Stopped' : 'Ready'}[state];
+        const stopped = stopReasons[p.stop_reason] || (p.stop_reason?.includes('Deployment was not confirmed') ? 'Unconfirmed move' : 'Stopped');
+        const label = {error:'Needs attention', stopping:'Stopping', connecting:'No video feed', running:'Running', ready:p.stop_reason ? stopped : 'Ready'}[state];
         setText(status, label); status.dataset.state = state;
         status.title = state === 'ready' && p.stop_reason ? stopReasons[p.stop_reason] || p.stop_reason.replaceAll('_', ' ') : label;
         setText(document.getElementById(`${name}-account-label`), p.account ? 'Playing as' : 'Account');
